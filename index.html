@@ -85,13 +85,26 @@
         <button class="btn-main" style="background:#673ab7;" onclick="loadAnalytics()">ดูสถิติสถิติวิเคราะห์กราฟ</button>
       </div>
 
-      <div class="m-card" style="background: #fdf2ff;"><h4>AI Gemini 2.5</h4><input type="text" id="aiTopic" placeholder="หัวข้อสอบ"><button class="btn-main" onclick="runAI()" id="btnAiRun">สั่ง AI สร้างทันที</button></div>
+      <div class="m-card" style="background: #fdf2ff;">
+        <h4><i class="fas fa-robot"></i> AI Gemini 2.5 สร้างข้อสอบ</h4>
+        <input type="text" id="aiTopic" placeholder="ระบุหัวข้อสอบที่ต้องการ">
+        <div style="display:flex; gap:10px;">
+          <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5">
+          <input type="number" id="aiNumOpt" placeholder="จำนวนตัวเลือก" value="4">
+        </div>
+        <button class="btn-main" onclick="runAI()" id="btnAiRun">สั่ง AI สร้างทันที</button>
+      </div>
 
       <div class="m-card">
-        <h4 id="qFormTitle">เพิ่มข้อสอบ</h4><input type="hidden" id="editRowIndex"><input type="text" id="qText" placeholder="โจทย์คำถาม">
-        <div id="dynamicOptionsContainer"></div><button class="btn-outline" style="padding:5px; font-size:12px;" onclick="addOptionField()">+ ตัวเลือก</button>
-        <select id="qAns" style="margin-top:10px;"><option value="">-- เฉลย --</option></select><input type="number" id="qTime" value="30">
-        <button class="btn-main" onclick="handleQuestionSubmit()">บันทึกข้อสอบ</button><button id="btnCancelEdit" class="btn-outline hidden" onclick="resetQForm()">ยกเลิก</button>
+        <h4 id="qFormTitle">เพิ่มข้อสอบด้วยตัวเอง</h4>
+        <input type="hidden" id="editRowIndex">
+        <input type="text" id="qText" placeholder="โจทย์คำถาม">
+        <div id="dynamicOptionsContainer"></div>
+        <button class="btn-outline" style="padding:5px; font-size:12px;" onclick="addOptionField()">+ เพิ่มตัวเลือกให้ข้อนี้</button>
+        <select id="qAns" style="margin-top:10px;"><option value="">-- ระบุเฉลย --</option></select>
+        <input type="number" id="qTime" placeholder="เวลาตอบ (วินาที)" value="30">
+        <button class="btn-main" onclick="handleQuestionSubmit()">บันทึก และเริ่มพิมพ์ข้อต่อไป</button>
+        <button id="btnCancelEdit" class="btn-outline hidden" onclick="resetQForm()">ยกเลิก</button>
       </div>
       <div id="existingQuestionsList"></div><button class="btn-outline" onclick="stopAdminPoll(); showView('adminDashboardView');">กลับ</button>
     </div>
@@ -174,7 +187,6 @@
     let h = ""; 
     ss.forEach(s => { 
       let color = s.status === 'START' ? '#2ecc71' : (s.status === 'END' ? '#e74c3c' : '#f39c12'); 
-      // เพิ่มปุ่มลบแยกออกมาด้านขวา
       h += `
         <div class="list-item">
           <span><b>${s.name}</b> <br><small style="color:${color}">${s.status}</small></span>
@@ -187,13 +199,12 @@
     document.getElementById('sessionList').innerHTML = h || "ไม่มีข้อมูล"; 
   }
 
-  // ฟังก์ชันลบแบบทดสอบที่เพิ่มใหม่
   async function deleteSessionData(id) {
     if(confirm("ยืนยันการลบแบบทดสอบนี้ใช่หรือไม่?\n(ข้อมูลคำถามและคะแนนของนักศึกษาจะถูกลบทิ้งทั้งหมด)")) {
       document.getElementById('overlay').classList.remove('hidden');
       await apiCall("deleteSession", {sessionID: id});
       document.getElementById('overlay').classList.add('hidden');
-      loadDashboardStats(); // โหลดหน้าใหม่
+      loadDashboardStats();
     }
   }
   
@@ -207,14 +218,23 @@
   function updateStatusUI(st) { document.querySelectorAll('[id^="btnStat"]').forEach(btn => { btn.style.background = "white"; btn.style.color = "var(--main)"; }); document.getElementById('btnStat'+st).style.background = "var(--main)"; document.getElementById('btnStat'+st).style.color = "white"; }
   async function changeStatus(s) { await apiCall("updateSessionStatus", {sessionID: currentSessionID, status: s}); updateStatusUI(s); }
   
-  async function runAI() { document.getElementById('overlay').classList.remove('hidden'); await apiCall("generateQuestionsWithAI", {sessionID: currentSessionID, topic: document.getElementById('aiTopic').value, numQ: 5, numOpt: 4}); document.getElementById('overlay').classList.add('hidden'); loadQuestions(); alert("สร้างเรียบร้อย"); }
+  // อัปเดตส่วน AI ให้ดึงค่าตัวเลขจากช่องที่กรอก
+  async function runAI() { 
+    document.getElementById('overlay').classList.remove('hidden'); 
+    let nQ = parseInt(document.getElementById('aiNumQ').value) || 5;
+    let nOpt = parseInt(document.getElementById('aiNumOpt').value) || 4;
+    await apiCall("generateQuestionsWithAI", {sessionID: currentSessionID, topic: document.getElementById('aiTopic').value, numQ: nQ, numOpt: nOpt}); 
+    document.getElementById('overlay').classList.add('hidden'); 
+    loadQuestions(); 
+    alert("สร้างเรียบร้อย"); 
+  }
   
   async function loadQuestions() { cachedQuestions = await apiCall("getQuestionsAdmin", {sessionID: currentSessionID}); let h = ""; cachedQuestions.forEach(q => h += `<div class="list-item"><span>${q.qNum}. ${q.question}</span><div><button onclick="prepareEdit(${q.rowIndex})" style="color:blue; background:none; border:none; padding:5px;">แก้</button> <button onclick="delQ(${q.rowIndex})" style="color:red; background:none; border:none; padding:5px;">ลบ</button></div></div>`); document.getElementById('existingQuestionsList').innerHTML = h; }
   
   function addOptionField(v="") { let c = document.getElementById("dynamicOptionsContainer"); let d = document.createElement("div"); d.style="display:flex; gap:5px;"; d.innerHTML = `<input type="text" class="qOptInput" value="${v}"><button type="button" onclick="this.parentElement.remove(); updateAnswerDropdown();">X</button>`; c.appendChild(d); updateAnswerDropdown(); }
   function updateAnswerDropdown() { let s = document.getElementById("qAns"), count = document.querySelectorAll(".qOptInput").length; s.innerHTML = '<option value="">-- เฉลย --</option>'; for(let i=1; i<=count; i++) s.innerHTML += `<option value="${i}">${i}</option>`; }
   function prepareEdit(r) { let q = cachedQuestions.find(i => i.rowIndex == r); isEditing = true; document.getElementById('editRowIndex').value = r; document.getElementById('qText').value = q.question; document.getElementById("dynamicOptionsContainer").innerHTML = ""; q.options.forEach(o => addOptionField(o)); document.getElementById('qAns').value = q.ans; document.getElementById('qTime').value = q.time; document.getElementById('qFormTitle').innerText = "แก้ไขข้อที่ " + q.qNum; document.getElementById('btnCancelEdit').classList.remove('hidden'); }
-  function resetQForm() { isEditing = false; document.getElementById('qText').value = ""; document.getElementById("dynamicOptionsContainer").innerHTML = ""; [1,2,3,4].forEach(() => addOptionField()); document.getElementById('qFormTitle').innerText = "เพิ่มข้อสอบ"; document.getElementById('btnCancelEdit').classList.add('hidden'); }
+  function resetQForm() { isEditing = false; document.getElementById('qText').value = ""; document.getElementById("dynamicOptionsContainer").innerHTML = ""; [1,2,3,4].forEach(() => addOptionField()); document.getElementById('qFormTitle').innerText = "เพิ่มข้อสอบด้วยตัวเอง"; document.getElementById('btnCancelEdit').classList.add('hidden'); }
   
   async function handleQuestionSubmit() { document.getElementById('overlay').classList.remove('hidden'); let os = []; document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value)); let d = { question: document.getElementById('qText').value, options: os, ans: document.getElementById('qAns').value, time: document.getElementById('qTime').value }; if(isEditing) await apiCall("updateQuestion", {rowIndex: document.getElementById('editRowIndex').value, qData: d}); else await apiCall("addQuestionToSession", {sessionID: currentSessionID, qData: d}); document.getElementById('overlay').classList.add('hidden'); loadQuestions(); resetQForm(); }
   
