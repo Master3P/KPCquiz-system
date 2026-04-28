@@ -135,7 +135,13 @@
     </div>
 
     <div id="resultView" class="hidden" style="text-align:center;">
-      <div class="m-card"><h2>ส่งข้อสอบแล้ว</h2><h1 id="finalScoreDisplay" style="font-size: 70px; color: var(--main);">--</h1><button class="btn-main" onclick="goHome()">กลับหน้าหลัก</button></div>
+      <div class="m-card">
+        <i class="fas fa-check-circle" style="font-size: 60px; color: #2ecc71; margin-bottom: 15px;"></i>
+        <h2 style="margin-top: 0;">ส่งคำตอบเรียบร้อย</h2>
+        <p style="font-size: 16px; color: #7f8c8d; margin-bottom: 5px;">คุณได้คะแนน</p>
+        <h1 id="finalScoreDisplay" style="font-size: 70px; color: var(--main); margin: 0;">--/--</h1>
+        <button class="btn-main" style="margin-top: 25px;" onclick="goHome()">กลับหน้าหลัก</button>
+      </div>
     </div>
 
     <div id="studentPortalView" class="hidden">
@@ -161,7 +167,8 @@
     }
   }
 
-  let currentSessionID = "", myStudentID = "", currentQNum = 1, timerInterval, adminPollInterval, userSelectedChoice = 0, isEditing = false, cachedQuestions = [], timeTotal = 30;
+  // เพิ่มตัวแปร totalQuizQuestions เพื่อเก็บจำนวนข้อไว้แสดงผลตอนจบ
+  let currentSessionID = "", myStudentID = "", currentQNum = 1, timerInterval, adminPollInterval, userSelectedChoice = 0, isEditing = false, cachedQuestions = [], timeTotal = 30, totalQuizQuestions = 0;
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
   window.onload = function() { loadDashboardStats(); };
@@ -218,7 +225,6 @@
   function updateStatusUI(st) { document.querySelectorAll('[id^="btnStat"]').forEach(btn => { btn.style.background = "white"; btn.style.color = "var(--main)"; }); document.getElementById('btnStat'+st).style.background = "var(--main)"; document.getElementById('btnStat'+st).style.color = "white"; }
   async function changeStatus(s) { await apiCall("updateSessionStatus", {sessionID: currentSessionID, status: s}); updateStatusUI(s); }
   
-  // อัปเดตส่วน AI ให้ดึงค่าตัวเลขจากช่องที่กรอก
   async function runAI() { 
     document.getElementById('overlay').classList.remove('hidden'); 
     let nQ = parseInt(document.getElementById('aiNumQ').value) || 5;
@@ -248,9 +254,28 @@
   
   async function studentJoinQuiz() { currentSessionID = document.getElementById('studentSessionSelect').value; myStudentID = document.getElementById('studentId').value; currentQNum = 1; if(!currentSessionID || !myStudentID) return; document.getElementById('overlay').classList.remove('hidden'); await apiCall("studentJoin", {sessionID: currentSessionID, studentID: myStudentID, studentName: document.getElementById('studentName').value}); document.getElementById('overlay').classList.add('hidden'); showView('quizView'); document.getElementById("questionText").innerText = "ระบบลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; let poll = setInterval(async () => { let st = await apiCall("checkSessionStatus", {sessionID: currentSessionID}); if(st === "START") { clearInterval(poll); loadNext(); } }, 4000); }
   
+  // ปรับปรุงส่วนแสดงผลคะแนน (เมื่อ d ไม่มีค่า แปลว่าสอบเสร็จ)
   async function loadNext() { userSelectedChoice = 0; document.getElementById("optionsContainer").innerHTML = ""; document.getElementById("confirmBtn").classList.add("hidden"); let d = await apiCall("getQuestionForStudent", {sessionID: currentSessionID, qNum: currentQNum}); renderQ(d); }
   
-  async function renderQ(d) { if(!d) { showView('resultView'); document.getElementById('overlay').classList.remove('hidden'); let score = await apiCall("getFinalScore", {sessionID: currentSessionID, studentID: myStudentID}); document.getElementById("finalScoreDisplay").innerText = score; document.getElementById('overlay').classList.add('hidden'); return; } document.getElementById("qCounter").innerText = `ข้อที่ ${d.qNum} / ${d.total}`; document.getElementById("studentIdDisplay").innerText = "ID: " + myStudentID; document.getElementById("questionText").innerText = d.question; d.options.forEach((o, i) => { let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = o; b.onclick = () => { userSelectedChoice = i+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmBtn").classList.remove("hidden"); }; document.getElementById("optionsContainer").appendChild(b); }); timeTotal = d.timeLimit; startTimer(d.timeLimit); }
+  async function renderQ(d) { 
+    if(!d) { 
+      showView('resultView'); 
+      document.getElementById('overlay').classList.remove('hidden'); 
+      let score = await apiCall("getFinalScore", {sessionID: currentSessionID, studentID: myStudentID}); 
+      // นำตัวเลขคะแนนมารวมกับจำนวนข้อทั้งหมดที่ดักไว้ (เช่น 5/10)
+      document.getElementById("finalScoreDisplay").innerText = score + "/" + totalQuizQuestions; 
+      document.getElementById('overlay').classList.add('hidden'); 
+      return; 
+    } 
+    // ดักเก็บจำนวนข้อสอบทั้งหมดไว้ในตัวแปร
+    totalQuizQuestions = d.total; 
+
+    document.getElementById("qCounter").innerText = `ข้อที่ ${d.qNum} / ${d.total}`; 
+    document.getElementById("studentIdDisplay").innerText = "ID: " + myStudentID; 
+    document.getElementById("questionText").innerText = d.question; 
+    d.options.forEach((o, i) => { let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = o; b.onclick = () => { userSelectedChoice = i+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmBtn").classList.remove("hidden"); }; document.getElementById("optionsContainer").appendChild(b); }); 
+    timeTotal = d.timeLimit; startTimer(d.timeLimit); 
+  }
   
   function startTimer(s) { clearInterval(timerInterval); let d = document.getElementById("timer"); let f = document.getElementById("timerFill"); d.innerText = s; f.style.width = "100%"; timerInterval = setInterval(() => { s--; d.innerText = s; f.style.width = (s/timeTotal*100) + "%"; if(s <= 0) { clearInterval(timerInterval); submitAnswer(0); } }, 1000); }
   
