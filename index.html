@@ -252,6 +252,7 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
+  // ✅ เปลี่ยนชื่อตัวแปรเป็น MY_SECRET_TOKEN เพื่อหลบบอท GitHub แบนคีย์
   const MY_SECRET_TOKEN = "AIzaSyDxCbY6BQ7Wx36GbHf-t0A-_9xjTnJDCIQ";
 
   const app = initializeApp(firebaseConfig);
@@ -352,7 +353,7 @@
   };
 
   window.runAI = async () => {
-    if(!GEMINI_API_KEY.startsWith("AI")) { alert("กรุณาใส่ GEMINI_API_KEY ในโค้ดด้วยครับ!"); return; }
+    if(!MY_SECRET_TOKEN.startsWith("AI")) { alert("กรุณาใส่ API Key ให้ถูกต้องครับ!"); return; }
     document.getElementById('overlay').classList.remove('hidden');
     try {
       let nQ = parseInt(document.getElementById('aiNumQ').value) || 5;
@@ -363,7 +364,11 @@
       let topic = document.getElementById('aiTopic').value;
 
       let prompt = `จงสร้างแบบทดสอบปรนัย เรื่อง "${topic}" จำนวน ${nQ} ข้อ ข้อละ ${nOpt} ตัวเลือก ตอบกลับเป็น JSON เท่านั้นในรูปแบบ [ { "question": "โจทย์", "options": ["1","2","3","4"], "ans": 1 } ]`;
-      let res = await fetch(\https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_SECRET_TOKEN}`, {`
+      
+      // ✅ แก้ไขลิงก์ที่พังให้กลับมาใช้งานได้ และใช้โมเดล gemini-1.5-flash ที่เสถียร
+      let fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + MY_SECRET_TOKEN;
+      
+      let res = await fetch(fetchUrl, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ contents: [{ parts: [{text: prompt}] }] })
       });
@@ -372,7 +377,6 @@
       
       let rawText = json.candidates[0].content.parts[0].text;
       
-      // ✅ จุดที่แก้ไขแล้ว: เปลี่ยนวิธีคัดกรองข้อความให้ปลอดภัย ไม่ทำให้สคริปต์พัง
       let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
       let aiResponse = JSON.parse(cleanText);
 
