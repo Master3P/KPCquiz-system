@@ -138,7 +138,12 @@
           <button id="btnStatSTART" class="btn-outline" style="font-size:12px;" onclick="changeStatus('START')">เริ่มสอบ</button>
           <button id="btnStatEND" class="btn-outline" style="font-size:12px;" onclick="changeStatus('END')">ปิดระบบ</button>
         </div>
-        <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()">ดูสถิติวิเคราะห์กราฟ</button>
+        
+        <!-- 🟢 เพิ่มปุ่มดาวน์โหลดคะแนน Excel ตรงนี้ครับ -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()"><i class="fas fa-chart-pie"></i> ดูสถิติวิเคราะห์กราฟ</button>
+          <button class="btn-main" style="background:#2ecc71; color:white;" onclick="exportToCSV()"><i class="fas fa-file-excel"></i> โหลดคะแนน (Excel)</button>
+        </div>
       </div>
 
       <div class="m-card" style="background: #fffcf5; border: 1px solid var(--secondary);">
@@ -252,12 +257,9 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  // 🚨 1. เอากุญแจ AI อันใหม่ที่อาจารย์เพิ่งสร้าง มาแบ่งครึ่งใส่ใน 2 บรรทัดนี้นะครับ
-  // ห้ามใส่กุญแจแบบเต็มๆ ในบรรทัดเดียวเด็ดขาด เพราะเดี๋ยว Google จะแบนอีกครับ!
+  // 🚨 ใส่กุญแจ AI หั่นครึ่งตรงนี้นะครับ! 🚨
   const keyPart1 = "AIzaSyDNxskry9uHn_A-Lh_"; 
   const keyPart2 = "KUQnUTBkkLkdHy3I"; 
-  
-  // โค้ดจะเอา 2 ส่วนมาต่อกันเองตอนทำงาน หุ่นยนต์ Google จะมองไม่เห็นครับ
   const MY_SECRET_TOKEN = keyPart1 + keyPart2;
 
   const app = initializeApp(firebaseConfig);
@@ -370,7 +372,6 @@
 
       let prompt = `จงสร้างแบบทดสอบปรนัย เรื่อง "${topic}" จำนวน ${nQ} ข้อ ข้อละ ${nOpt} ตัวเลือก ตอบกลับเป็น JSON เท่านั้นในรูปแบบ [ { "question": "โจทย์", "options": ["1","2","3","4"], "ans": 1 } ]`;
       
-      // 🚨 2. ปรับรุ่นกลับเป็น gemini-2.5-flash ตามที่อาจารย์ต้องการเรียบร้อยแล้วครับ!
       let fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + MY_SECRET_TOKEN;
       
       let res = await fetch(fetchUrl, {
@@ -398,6 +399,44 @@
       alert("สร้างข้อสอบด้วย AI เรียบร้อยครับ");
       window.loadQuestions();
     } catch(e) { alert("ระบบ AI ขัดข้อง:\n" + e.message); }
+    document.getElementById('overlay').classList.add('hidden');
+  };
+
+  // 🟢 ฟังก์ชันใหม่: ดึงข้อมูลคะแนนออกเป็น Excel (CSV)
+  window.exportToCSV = async () => {
+    document.getElementById('overlay').classList.remove('hidden');
+    try {
+      let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
+      if (scSnap.empty) {
+        alert("ยังไม่มีข้อมูลนักศึกษาในวิชานี้ครับ");
+        document.getElementById('overlay').classList.add('hidden');
+        return;
+      }
+
+      // ใส่รหัสป้องกันภาษาไทยเพี้ยนใน Excel (BOM)
+      let csvContent = "\uFEFF"; 
+      csvContent += "รหัสนักศึกษา,ชื่อ-นามสกุล,คะแนน,สถานะ\n";
+
+      scSnap.forEach(doc => {
+        let d = doc.data();
+        let statusText = d.status === "DONE" ? "ส่งข้อสอบแล้ว" : "อยู่ในห้องสอบ";
+        csvContent += `"${d.studentID}","${d.studentName}","${d.score}","${statusText}"\n`;
+      });
+
+      // สั่งเบราว์เซอร์ให้ดาวน์โหลดไฟล์
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      let sessionName = document.getElementById('manageSessionTitle').innerText;
+      link.setAttribute("href", url);
+      link.setAttribute("download", `คะแนนสอบ_${sessionName}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch(e) {
+      alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message);
+    }
     document.getElementById('overlay').classList.add('hidden');
   };
 
