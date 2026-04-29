@@ -10,13 +10,13 @@
   <style>
     /* 🎨 โทนสี: ม่วง-น้ำเงิน (รัฐศาสตร์) ตัดกับ เหลืองทอง-แดง (SCT) */
     :root { 
-      --main: #3b0964;       /* สีม่วงเข้ม (SCT Purple) */
-      --accent: #11165e;     /* สีน้ำเงินกรมท่า (Navy Blue) */
-      --secondary: #ffb300;  /* สีเหลืองทอง (SCT Gold) */
-      --danger: #d32f2f;     /* สีแดง (SCT Red) สำหรับปุ่มลบ/ยกเลิก */
-      --bg: #f0f2f5;         /* สีพื้นหลังหน้าเว็บขาวอมเทาสบายตา */
-      --card: #ffffff;       /* สีพื้นหลังกล่องข้อความ */
-      --text: #2c3e50;       /* สีข้อความหลัก */
+      --main: #3b0964;       
+      --accent: #11165e;     
+      --secondary: #ffb300;  
+      --danger: #d32f2f;     
+      --bg: #f0f2f5;         
+      --card: #ffffff;       
+      --text: #2c3e50;       
     }
     
     body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
@@ -73,7 +73,6 @@
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; } 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* เครดิตผู้พัฒนา */
     .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #7f8c8d; font-weight: 400; opacity: 0.9; }
     .developer-credit-white { text-align: center; margin-top: 30px; font-size: 13px; color: white; font-weight: 400; opacity: 0.9; }
   </style>
@@ -240,11 +239,9 @@
 
 <!-- ================== SCRIPT FIREBASE + LOGIC ================== -->
 <script type="module">
-  // นำเข้าเครื่องมือจาก Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-  // ⭐️ 1. รหัสเชื่อมต่อ FIREBASE ของอาจารย์
   const firebaseConfig = {
     apiKey: "AIzaSyC8lbyhvEplX48fvc5c8fK1eBXtUfuI1ac",
     authDomain: "kpcquiz-system.firebaseapp.com",
@@ -255,14 +252,11 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  // ⭐️ 2. ใส่รหัส GEMINI API KEY ตรงนี้ครับ (เพื่อให้ AI สร้างข้อสอบได้)
   const GEMINI_API_KEY = "AIzaSyC0iEp3Se5KYxIpd-VLm1jaAlKtqqsSCVU";
 
-  // เปิดใช้งานฐานข้อมูล
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ตัวแปรส่วนกลาง
   window.currentSessionID = "";
   window.myStudentID = "";
   window.currentQNum = 1;
@@ -277,7 +271,6 @@
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
 
-  // UI Navigation
   window.showView = (v) => { document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); document.getElementById(v).classList.remove('hidden'); window.scrollTo(0,0); };
   window.goHome = () => { location.reload(); };
   window.goAdminHome = () => { if(adminUnsub) adminUnsub(); showView('adminDashboardView'); loadDashboardStats(); };
@@ -292,7 +285,6 @@
     } else alert("รหัสผ่านผิด");
   };
 
-  // ================= ADMIN FUNCTIONS =================
   window.loadDashboardStats = async () => {
     let sSnap = await getDocs(collection(db, "sessions"));
     let scSnap = await getDocs(collection(db, "scores"));
@@ -304,7 +296,7 @@
   const loadAdminList = async () => {
     let sSnap = await getDocs(collection(db, "sessions"));
     let ss = []; sSnap.forEach(d => ss.push({ id: d.id, ...d.data() }));
-    ss.sort((a, b) => b.createdAt - a.createdAt); // เรียงล่าสุด
+    ss.sort((a, b) => b.createdAt - a.createdAt); 
     let h = "";
     ss.forEach(s => {
       let color = s.status === 'START' ? '#2ecc71' : (s.status === 'END' ? 'var(--danger)' : 'var(--secondary)');
@@ -328,7 +320,6 @@
   window.deleteSessionData = async (id) => {
     if(!confirm("ยืนยันการลบแบบทดสอบนี้ใช่หรือไม่?\n(ข้อมูลคำถามและคะแนนของนักศึกษาจะถูกลบทั้งหมด)")) return;
     document.getElementById('overlay').classList.remove('hidden');
-    // ลบข้อมูลที่ผูกกันทั้งหมด
     let qs = await getDocs(query(collection(db, "questions"), where("sessionID", "==", id))); qs.forEach(d => deleteDoc(d.ref));
     let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", id))); sc.forEach(d => deleteDoc(d.ref));
     let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", id))); rs.forEach(d => deleteDoc(d.ref));
@@ -341,7 +332,6 @@
     window.currentSessionID = id; document.getElementById('manageSessionTitle').innerText = name;
     showView('adminManageView'); window.loadQuestions(); window.resetQForm(); window.updateStatusUI(status);
     
-    // Realtime Tracker (อัปเดตคนเข้าสอบสดๆ โดยไม่ต้องรีเฟรชหน้า!)
     if(adminUnsub) adminUnsub();
     adminUnsub = onSnapshot(query(collection(db, "scores"), where("sessionID", "==", id)), (snap) => {
       let wait = 0, finish = 0;
@@ -361,7 +351,6 @@
     window.updateStatusUI(s);
   };
 
-  // AI GENERATOR V2 (ทำงานบนหน้าเว็บโดยตรง ไม่ผ่าน GAS)
   window.runAI = async () => {
     if(!GEMINI_API_KEY.startsWith("AI")) { alert("กรุณาใส่ GEMINI_API_KEY ในโค้ดด้วยครับ!"); return; }
     document.getElementById('overlay').classList.remove('hidden');
@@ -382,15 +371,14 @@
       if(json.error) throw new Error(json.error.message);
       
       let rawText = json.candidates[0].content.parts[0].text;
-      let cleanText = rawText.split("```json").join("").split("
-```").join("").trim();
+      
+      // ✅ จุดที่แก้ไขแล้ว: เปลี่ยนวิธีคัดกรองข้อความให้ปลอดภัย ไม่ทำให้สคริปต์พัง
+      let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
       let aiResponse = JSON.parse(cleanText);
 
-      // นับข้อสอบเดิมว่ามีกี่ข้อ
       let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
       let startQNum = qSnap.size + 1;
 
-      // บันทึกลง Firebase พร้อมกันทีเดียว
       const batch = writeBatch(db);
       aiResponse.forEach((item, index) => {
         let qRef = doc(collection(db, "questions"));
@@ -408,7 +396,7 @@
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
     window.cachedQuestions = [];
     qSnap.forEach(d => window.cachedQuestions.push({ id: d.id, ...d.data() }));
-    window.cachedQuestions.sort((a,b) => a.qNum - b.qNum); // เรียงตามข้อ
+    window.cachedQuestions.sort((a,b) => a.qNum - b.qNum); 
 
     let h = "";
     window.cachedQuestions.forEach(q => {
@@ -493,7 +481,6 @@
     new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#ffb300']});
   };
 
-  // ================= STUDENT FUNCTIONS =================
   window.loadActiveSessionsForStudent = async () => {
     let sSnap = await getDocs(collection(db, "sessions")); let s = document.getElementById('studentSessionSelect'); s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
     sSnap.forEach(d => { if(d.data().status !== 'END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
@@ -506,7 +493,7 @@
     if(!window.currentSessionID || !window.myStudentID) { alert("กรุณาเลือกวิชาและกรอกรหัส!"); return; }
 
     document.getElementById('overlay').classList.remove('hidden');
-    let sDocId = window.currentSessionID + "_" + window.myStudentID; // ใช้รหัสรวมเพื่อป้องกันสอบซ้ำ
+    let sDocId = window.currentSessionID + "_" + window.myStudentID; 
     let scoreRef = doc(db, "scores", sDocId);
     let sDoc = await getDoc(scoreRef);
 
@@ -519,7 +506,6 @@
     document.getElementById('overlay').classList.add('hidden');
     showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ...";
 
-    // รออาจารย์เปิดระบบสอบ (Realtime!)
     if(studentUnsub) studentUnsub();
     studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (docSnap) => {
       if(docSnap.data().status === "START") { studentUnsub(); window.loadNext(); }
@@ -530,7 +516,6 @@
     window.userSelectedChoice = 0; document.getElementById("optionsContainer").innerHTML = ""; document.getElementById("confirmBtn").classList.add("hidden");
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("qNum", "==", window.currentQNum)));
     if(qSnap.empty) {
-      // สอบเสร็จ
       showView('resultView'); document.getElementById('overlay').classList.remove('hidden');
       let scoreRef = await getDoc(doc(db, "scores", window.currentSessionID + "_" + window.myStudentID));
       let tQ = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
@@ -561,10 +546,8 @@
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("qNum", "==", window.currentQNum)));
     let correctAns = qSnap.docs[0].data().ans; let isCorrect = (choice === correctAns && choice !== 0);
     
-    // บันทึกคำตอบ
     await addDoc(collection(db, "responses"), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: window.currentQNum, result: isCorrect ? "RIGHT" : "WRONG" });
     
-    // อัปเดตคะแนน
     let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
     let sDoc = await getDoc(scoreRef); let curScore = sDoc.data().score;
     let newStatus = (window.currentQNum >= window.totalQuizQuestions) ? "DONE" : "WAITING";
@@ -587,7 +570,6 @@
     document.getElementById('portalResult').innerHTML = h; document.getElementById('overlay').classList.add('hidden');
   };
 
-  // Init Form UI
   window.resetQForm();
 </script>
 </body>
