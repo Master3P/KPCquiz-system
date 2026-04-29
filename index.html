@@ -366,7 +366,7 @@
       let prompt = `จงสร้างแบบทดสอบปรนัย เรื่อง "${topic}" จำนวน ${nQ} ข้อ ข้อละ ${nOpt} ตัวเลือก ตอบกลับเป็น JSON เท่านั้นในรูปแบบ [ { "question": "โจทย์", "options": ["1","2","3","4"], "ans": 1 } ]`;
       
       // ✅ แก้ไขลิงก์ที่พังให้กลับมาใช้งานได้ และใช้โมเดล gemini-1.5-flash ที่เสถียร
-      let fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + MY_SECRET_TOKEN;
+      let fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + MY_SECRET_TOKEN;
       
       let res = await fetch(fetchUrl, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
