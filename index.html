@@ -252,7 +252,7 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  const GEMINI_API_KEY = "AIzaSyC0iEp3Se5KYxIpd-VLm1jaAlKtqqsSCVU";
+  const MY_SECRET_TOKEN = "AIzaSyDxCbY6BQ7Wx36GbHf-t0A-_9xjTnJDCIQ";
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -363,7 +363,7 @@
       let topic = document.getElementById('aiTopic').value;
 
       let prompt = `จงสร้างแบบทดสอบปรนัย เรื่อง "${topic}" จำนวน ${nQ} ข้อ ข้อละ ${nOpt} ตัวเลือก ตอบกลับเป็น JSON เท่านั้นในรูปแบบ [ { "question": "โจทย์", "options": ["1","2","3","4"], "ans": 1 } ]`;
-      let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      let res = await fetch(\https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_SECRET_TOKEN}`, {`
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ contents: [{ parts: [{text: prompt}] }] })
       });
