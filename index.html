@@ -8,76 +8,76 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
-    /* ปรับโทนสีเป็น แดง-เหลือง ตามสั่ง */
+    /* 🎨 โทนสีใหม่ Modern Soft (แดงคอรัล - เหลืองมัสตาร์ด) ถนอมสายตา */
     :root { 
-      --main: #d32f2f;       /* สีแดง */
-      --secondary: #fbc02d;  /* สีเหลือง */
-      --accent: #ffeb3b;     /* สีเหลืองสว่าง */
-      --danger: #b71c1c;     /* สีแดงเข้ม */
-      --bg: #fffde7;         /* พื้นหลังอมเหลืองอ่อนๆสบายตา */
+      --main: #e05a47;       /* สีแดงคอรัล (Soft Coral) ซอฟต์ลง ไม่แสบตา */
+      --secondary: #e6a817;  /* สีเหลืองมัสตาร์ดตุ่นๆ (Mustard Yellow) ดูแพง อบอุ่น */
+      --danger: #cc4534;     /* สีแดงเข้มสำหรับปุ่มลบ */
+      --bg: #faf7f2;         /* พื้นหลังสีครีมอุ่นๆ (Warm Vanilla) สไตล์ Modern Minimal */
       --card: #ffffff; 
-      --text: #2c3e50; 
+      --text: #3e3a39;       /* สีข้อความเทาเข้มอมน้ำตาล ลดคอนทราสต์จัดๆ ให้อ่านสบายตา */
     }
     
     body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
     .hidden { display: none !important; }
     
-    /* Layout เดิมที่สมบูรณ์ */
     #loginGateView { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--main), var(--secondary)); padding: 20px; box-sizing: border-box; }
     .logo-container { text-align: center; color: white; margin-bottom: 40px; } 
     .logo-container i { font-size: 60px; margin-bottom: 10px; }
-    .gate-card { background: var(--card); width: 100%; max-width: 350px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
+    .gate-card { background: var(--card); width: 100%; max-width: 350px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
     .gate-card:active { transform: scale(0.95); } 
     .gate-card i { font-size: 35px; color: var(--main); margin-bottom: 10px; } 
     .gate-card h3 { margin: 0; font-size: 18px; }
     
-    .pin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; }
-    .pin-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 300px; text-align: center; }
+    .pin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .pin-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     
-    header { background: var(--main); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    header { background: var(--main); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     header h2 { margin: 0; font-size: 18px; font-weight: 600; } 
     .nav-btn { background: none; border: none; color: white; font-size: 20px; padding: 5px; cursor: pointer; }
     
     .container { padding: 20px; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
-    .m-card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .m-card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #f0eee9; }
     
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
     .stat-mini { background: white; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #eee; } 
     .stat-mini p { margin: 0; font-size: 12px; color: #7f8c8d; } 
     .stat-mini b { font-size: 20px; color: var(--main); }
     
-    .live-counter-card { background: #fff9e6; border: 2px solid var(--secondary); border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-    .counter-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 10px; } 
+    .live-counter-card { background: #fdfbf7; border: 2px solid #efebd8; border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .counter-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); } 
     .counter-row i { color: var(--main); margin-right: 10px; } 
     .counter-num { font-size: 24px; font-weight: 600; color: var(--main); }
     
     button { padding: 12px; border-radius: 10px; border: none; font-weight: 600; font-family: 'Prompt'; font-size: 15px; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; }
     .btn-main { background: var(--main); color: white; } 
+    .btn-main:hover { background: #d04f3d; }
     .btn-outline { background: white; border: 2px solid var(--main); color: var(--main); } 
     .btn-danger { background: var(--danger); color: white; }
     
-    input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Prompt'; font-size: 15px; }
+    input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e0ddd7; margin-bottom: 15px; box-sizing: border-box; font-family: 'Prompt'; font-size: 15px; background: #faf9f7; transition: 0.3s; }
+    input:focus, select:focus { outline: none; border-color: var(--secondary); background: white; }
     .list-item { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     
     .timer-bar { height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 20px; } 
     #timerFill { height: 100%; background: var(--main); width: 100%; transition: 1s linear; } 
     .timer-text { font-size: 30px; font-weight: 600; text-align: center; color: var(--main); margin-bottom: 10px; }
     
-    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 16px; width: 100%; display: block; } 
-    .opt-btn.selected { background: #fff3e0; border-color: var(--secondary); font-weight: 600; }
+    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 16px; width: 100%; display: block; color: var(--text); } 
+    .opt-btn.selected { background: #fdfbf5; border-color: var(--secondary); font-weight: 600; color: var(--main); }
     
-    #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:5000; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+    #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(252,250,245,0.9); z-index:5000; display:flex; flex-direction:column; justify-content:center; align-items:center; }
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--main); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; } 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* เครดิตผู้พัฒนา */
-    .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #7f8c8d; font-weight: 400; opacity: 0.8; }
+    .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #9c9795; font-weight: 400; opacity: 0.8; }
     .developer-credit-white { text-align: center; margin-top: 30px; font-size: 13px; color: white; font-weight: 400; opacity: 0.9; }
   </style>
 </head>
 <body>
 
-  <div id="overlay" class="hidden"><div class="loader"></div><p style="margin-top:15px; font-weight:600;">กำลังดำเนินการ...</p></div>
+  <div id="overlay" class="hidden"><div class="loader"></div><p style="margin-top:15px; font-weight:600; color: var(--text);">กำลังดำเนินการ...</p></div>
 
   <div id="loginGateView">
     <div class="logo-container"><i class="fas fa-shield-alt"></i><h1>แบบทดสอบออนไลน์</h1></div>
@@ -136,16 +136,17 @@
           <button id="btnStatSTART" class="btn-outline" style="font-size:12px;" onclick="changeStatus('START')">เริ่มสอบ</button>
           <button id="btnStatEND" class="btn-outline" style="font-size:12px;" onclick="changeStatus('END')">ปิดระบบ</button>
         </div>
-        <button class="btn-main" style="background:#f57c00;" onclick="loadAnalytics()">ดูสถิติวิเคราะห์กราฟ</button>
+        <button class="btn-main" style="background:#d9822b;" onclick="loadAnalytics()">ดูสถิติวิเคราะห์กราฟ</button>
       </div>
 
-      <div class="m-card" style="background: #fff9e6; border: 1px solid var(--secondary);">
+      <div class="m-card" style="background: #fcf7eb; border: 1px solid #f0e6cd;">
         <h4><i class="fas fa-robot" style="color: var(--secondary);"></i> AI Gemini สร้างข้อสอบ</h4>
         <input type="text" id="aiTopic" placeholder="ระบุหัวข้อสอบที่ต้องการ">
-        <div style="display:flex; gap:10px;">
-          <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5">
-          <input type="number" id="aiMin" placeholder="นาที" value="0">
-          <input type="number" id="aiSec" placeholder="วินาที" value="30">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+          <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5" style="margin-bottom:0;">
+          <input type="number" id="aiNumOpt" placeholder="จำนวนตัวเลือก" value="4" style="margin-bottom:0;">
+          <input type="number" id="aiMin" placeholder="นาที" value="0" style="margin-bottom:0;">
+          <input type="number" id="aiSec" placeholder="วินาที" value="30" style="margin-bottom:0;">
         </div>
         <button class="btn-main" onclick="runAI()" id="btnAiRun">สั่ง AI สร้างทันที</button>
       </div>
@@ -375,11 +376,10 @@
     updateStatusUI(s); 
   }
   
-  // AI Creation Logic (เพิ่มเวลาแล้ว)
   async function runAI() { 
     document.getElementById('overlay').classList.remove('hidden'); 
     let nQ = parseInt(document.getElementById('aiNumQ').value) || 5; 
-    let nOpt = 4; // กำหนด 4 ช้อยส์เป็นมาตรฐานเพื่อประหยัดพื้นที่หน้าจอ
+    let nOpt = parseInt(document.getElementById('aiNumOpt').value) || 4; 
     let nMin = parseInt(document.getElementById('aiMin').value) || 0;
     let nSec = parseInt(document.getElementById('aiSec').value) || 0;
     let totalSeconds = (nMin * 60) + nSec;
@@ -395,7 +395,6 @@
     }
   }
   
-  // โชว์เฉลยและเวลา ให้แอดมินดูง่ายๆ
   async function loadQuestions() { 
     cachedQuestions = await apiCall("getQuestionsAdmin", {sessionID: currentSessionID}); 
     let h = ""; 
@@ -506,7 +505,7 @@
     
     let d1 = [['ข้อที่', 'ตอบผิด']]; 
     for (let q in data.itemAnalysis) d1.push(["ข้อ "+q, data.itemAnalysis[q]]); 
-    new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์กราฟแต่ละข้อ', colors: ['#e74c3c']}); 
+    new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์กราฟแต่ละข้อ', colors: ['#e05a47']}); 
     
     let freq = {}; 
     for(let i=0; i<=data.totalQs; i++) freq[i] = 0; 
@@ -514,7 +513,7 @@
     
     let d2 = [['คะแนน', 'คน']]; 
     for(let s in freq) d2.push([s+" คะแนน", freq[s]]); 
-    new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#fbc02d']}); 
+    new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#e6a817']}); 
   }
   
   function stopAdminPoll() { clearInterval(adminPollInterval); }
