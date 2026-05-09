@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบแบบทดสอบออนไลน์ (Firebase Edition)</title>
   
-  <!-- ระบบแจ้งเตือน Error อัตโนมัติ (ช่วยหาบั๊ก) -->
   <script>
     window.onerror = function(message, source, lineno, colno, error) {
       alert("พบข้อผิดพลาดในโค้ด (บรรทัดที่ " + lineno + "):\n" + message + "\n\nรบกวนแคปจอนี้ส่งให้ผมดูนะครับ!");
@@ -17,7 +16,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
-    /* 🎨 โทนสี: ม่วง-น้ำเงิน (รัฐศาสตร์) ตัดกับ เหลืองทอง-แดง (SCT) */
     :root { 
       --main: #3b0964;       
       --accent: #11165e;     
@@ -85,7 +83,6 @@
     .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #7f8c8d; font-weight: 400; opacity: 0.9; }
     .developer-credit-white { text-align: center; margin-top: 30px; font-size: 13px; color: white; font-weight: 400; opacity: 0.9; }
 
-    /* ป้ายบอกประเภทข้อสอบ */
     .badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; margin-bottom: 5px; }
     .badge-choice { background-color: #e3f2fd; color: #1976d2; }
     .badge-text { background-color: #f3e5f5; color: #7b1fa2; }
@@ -152,10 +149,13 @@
           <button id="btnStatSTART" class="btn-outline" style="font-size:12px;" onclick="changeStatus('START')">เริ่มสอบ</button>
           <button id="btnStatEND" class="btn-outline" style="font-size:12px;" onclick="changeStatus('END')">ปิดระบบ</button>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 10px;">
           <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()"><i class="fas fa-chart-pie"></i> ดูสถิติวิเคราะห์กราฟ</button>
           <button class="btn-main" style="background:#2ecc71; color:white;" onclick="exportToCSV()"><i class="fas fa-file-excel"></i> โหลดคะแนน (Excel)</button>
         </div>
+        <!-- 🟢 ปุ่มใหม่สำหรับล้างคะแนนโดยเฉพาะ -->
+        <button class="btn-danger" style="margin-bottom: 15px;" onclick="resetSessionData()"><i class="fas fa-eraser"></i> ล้างข้อมูลคะแนน (เก็บข้อสอบไว้)</button>
       </div>
 
       <div class="m-card" style="background: #fffcf5; border: 1px solid var(--secondary);">
@@ -207,7 +207,6 @@
       </div>
     </div>
 
-    <!-- STUDENT VIEWS -->
     <div id="studentDashboardView" class="hidden">
       <div class="m-card" style="text-align:center;">
         <i class="fas fa-graduation-cap" style="font-size: 50px; color: var(--main);"></i>
@@ -265,7 +264,6 @@
     <div class="developer-credit"><i class="fas fa-code"></i> Developed by <b>Kanpitcha</b></div>
   </div>
 
-<!-- ================== SCRIPT FIREBASE + LOGIC ================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -358,6 +356,24 @@
     loadDashboardStats();
   };
 
+  // 🟢 ฟังก์ชันใหม่: สำหรับล้างแค่ข้อมูลคะแนน แต่เก็บข้อสอบไว้
+  window.resetSessionData = async () => {
+    if(!confirm("⚠️ ยืนยันการล้างข้อมูลคะแนนใช่หรือไม่?\n\n- คำตอบและคะแนนของนักศึกษาในวิชานี้จะถูกลบทั้งหมด (กลายเป็น 0)\n- ข้อสอบและการตั้งค่าจะยังอยู่เหมือนเดิม")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    try {
+      let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
+      sc.forEach(d => deleteDoc(d.ref));
+      
+      let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
+      rs.forEach(d => deleteDoc(d.ref));
+      
+      alert("ล้างข้อมูลคะแนนเรียบร้อยแล้วครับ! สามารถให้นักศึกษากลุ่มใหม่เข้ามาสอบได้เลย");
+    } catch(e) {
+      alert("เกิดข้อผิดพลาดในการล้างข้อมูล: " + e.message);
+    }
+    document.getElementById('overlay').classList.add('hidden');
+  };
+
   window.manageSession = (id, name, status) => {
     window.currentSessionID = id; document.getElementById('manageSessionTitle').innerText = name;
     showView('adminManageView'); window.loadQuestions(); window.resetQForm(); window.updateStatusUI(status);
@@ -405,7 +421,6 @@
       
       let rawText = json.candidates[0].content.parts[0].text;
       
-      // ✅ แก้ไขวิธีดึงข้อความ AI แบบหลบสัญลักษณ์เจ้าปัญหา ป้องกันโค้ดแหว่ง
       let mark = "`" + "`" + "`"; 
       let cleanText = rawText.split(mark + "json").join("").split(mark).join("").trim();
       let aiResponse = JSON.parse(cleanText);
@@ -694,7 +709,6 @@
     document.getElementById('overlay').classList.add('hidden'); window.currentQNum++; window.loadNext();
   };
 
-  // ✅ ใส่เพื่อรับประกันว่า DOM พร้อมใช้งานจริงๆ
   window.addEventListener('DOMContentLoaded', (event) => {
       window.resetQForm();
   });
