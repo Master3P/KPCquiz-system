@@ -69,12 +69,10 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--main); background: white; box-shadow: 0 0 0 2px rgba(59, 9, 100, 0.1); }
     .list-item { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
     
-    /* สไตล์เวลาจับทีละข้อ (STRICT) */
     .timer-bar { height: 10px; background: #e1e4e8; border-radius: 5px; overflow: hidden; margin-bottom: 20px; } 
-    #timerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; } 
+    #strictTimerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; } 
     .timer-text-strict { font-size: 35px; font-weight: 600; text-align: center; color: var(--danger); margin-bottom: 10px; font-family: monospace; }
     
-    /* สไตล์เวลารวมอิสระ (FREE) */
     .timer-text-global { font-size: 28px; font-weight: 600; text-align: right; color: var(--danger); margin-bottom: 0; line-height: 1; font-family: monospace; }
     
     .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 16px; width: 100%; display: block; color: var(--text); transition: 0.2s; } 
@@ -96,7 +94,6 @@
     .badge-choice { background-color: #e3f2fd; color: #1976d2; }
     .badge-text { background-color: #f3e5f5; color: #7b1fa2; }
     
-    /* สกอร์บาร์ที่ปรับแต่งได้ */
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
@@ -187,30 +184,15 @@
         <button class="btn-danger" style="margin-bottom: 15px;" onclick="resetSessionData()"><i class="fas fa-eraser"></i> ล้างข้อมูลคะแนน (เก็บข้อสอบไว้)</button>
       </div>
 
-      <!-- 🟢 ส่วนที่แก้ไขใหม่: เพิ่มกล่องค้นหาแบบ Drop-down สำหรับข้อสอบที่สร้างแล้ว -->
       <div class="m-card" style="background: #fdfefe; border-top: 4px solid var(--main); padding-bottom: 10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
           <h4 style="margin:0; color:var(--main);"><i class="fas fa-list-ol"></i> รายการข้อสอบ</h4>
-          <!-- กล่อง Drop-down สำหรับตัวกรอง -->
           <select id="qFilterSelect" onchange="renderQuestionList()" style="width: auto; max-width: 150px; margin-bottom:0; padding:8px; font-size:13px; font-weight:600; color:var(--main);">
             <option value="ALL">ดูทั้งหมด</option>
           </select>
         </div>
         
-        <!-- หุ้มรายการด้วย Scroll Box จำกัดความสูง กันหน้าเว็บยาวเกินไป -->
         <div id="existingQuestionsList" class="custom-scrollbar" style="max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
-      </div>
-
-      <div class="m-card" style="background: #fffcf5; border: 1px solid var(--secondary);">
-        <h4><i class="fas fa-robot" style="color: var(--secondary);"></i> AI Gemini สร้างข้อสอบ (แบบตัวเลือก)</h4>
-        <input type="text" id="aiTopic" placeholder="ระบุหัวข้อสอบที่ต้องการ">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
-          <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5" style="margin-bottom:0;">
-          <input type="number" id="aiNumOpt" placeholder="จำนวนตัวเลือก" value="4" style="margin-bottom:0;">
-          <input type="number" id="aiMin" placeholder="นาที (ถ้าโหมดบังคับ)" value="0" style="margin-bottom:0;">
-          <input type="number" id="aiSec" placeholder="วินาที" value="30" style="margin-bottom:0;">
-        </div>
-        <button class="btn-main" style="background: var(--accent);" onclick="runAI()" id="btnAiRun">สั่ง AI สร้างทันที</button>
       </div>
 
       <div class="m-card">
@@ -346,10 +328,6 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  const keyPart1 = "AIzaSyDNxskry9uHn_A-"; 
-  const keyPart2 = "Lh_KUQnUTBkkLkdHy3I"; 
-  const MY_SECRET_TOKEN = keyPart1 + keyPart2;
-
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -455,24 +433,6 @@
   window.updateStatusUI = (st) => { document.querySelectorAll('[id^="btnStat"]').forEach(btn => { btn.style.background = "white"; btn.style.color = "var(--main)"; }); document.getElementById('btnStat'+st).style.background = "var(--main)"; document.getElementById('btnStat'+st).style.color = "white"; };
   window.changeStatus = async (s) => { await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s }); window.updateStatusUI(s); };
 
-  window.runAI = async () => {
-    if(!MY_SECRET_TOKEN.startsWith("AI")) { alert("กรุณาใส่ API Key ให้ถูกต้องครับ!"); return; }
-    document.getElementById('overlay').classList.remove('hidden');
-    try {
-      let nQ = parseInt(document.getElementById('aiNumQ').value) || 5; let nOpt = parseInt(document.getElementById('aiNumOpt').value) || 4; let nMin = parseInt(document.getElementById('aiMin').value) || 0; let nSec = parseInt(document.getElementById('aiSec').value) || 30; let totalSeconds = (nMin * 60) + nSec; let topic = document.getElementById('aiTopic').value;
-      let prompt = `จงสร้างแบบทดสอบปรนัย เรื่อง "${topic}" จำนวน ${nQ} ข้อ ข้อละ ${nOpt} ตัวเลือก ตอบกลับเป็น JSON เท่านั้นในรูปแบบ [ { "question": "โจทย์", "options": ["1","2","3","4"], "ans": 1 } ]`;
-      let fetchUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + MY_SECRET_TOKEN;
-      let res = await fetch(fetchUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{text: prompt}] }] }) });
-      let json = await res.json(); if(json.error) throw new Error(json.error.message);
-      
-      let rawText = json.candidates[0].content.parts[0].text; let mark = "`" + "`" + "`"; let cleanText = rawText.split(mark + "json").join("").split(mark).join("").trim();
-      let aiResponse = JSON.parse(cleanText); let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID))); let startQNum = qSnap.size + 1;
-      const batch = writeBatch(db); aiResponse.forEach((item, index) => { let qRef = doc(collection(db, "questions")); batch.set(qRef, { sessionID: window.currentSessionID, qNum: startQNum + index, type: "CHOICE", question: item.question, options: item.options, ans: parseInt(item.ans), time: totalSeconds }); });
-      await batch.commit(); alert("สร้างข้อสอบด้วย AI เรียบร้อยครับ"); window.loadQuestions();
-    } catch(e) { alert("ระบบ AI ขัดข้อง:\n" + e.message); }
-    document.getElementById('overlay').classList.add('hidden');
-  };
-
   window.exportToCSV = async () => {
     document.getElementById('overlay').classList.remove('hidden');
     try {
@@ -492,43 +452,28 @@
     } catch(e) { alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message); } document.getElementById('overlay').classList.add('hidden');
   };
 
-  // 🟢 อัปเกรดระบบโหลดข้อสอบ รองรับ Drop-down Filter
   window.loadQuestions = async () => {
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
     let cachedQuestions = []; qSnap.forEach(d => cachedQuestions.push({ id: d.id, ...d.data() }));
     cachedQuestions.sort((a,b) => a.qNum - b.qNum); window.allQuizQuestions = cachedQuestions; 
 
-    // อัปเดต Dropdown กรองรายการข้อสอบ
     let filterSelect = document.getElementById('qFilterSelect');
     let currentVal = filterSelect.value || "ALL";
     filterSelect.innerHTML = '<option value="ALL">ดูทั้งหมด</option>';
-    cachedQuestions.forEach(q => {
-        filterSelect.innerHTML += `<option value="${q.qNum}">ข้อที่ ${q.qNum}</option>`;
-    });
-    // จำค่าเดิมไว้ ถ้ายังมีข้อนี้อยู่ให้ใช้ตัวเลือกเดิม
-    if(cachedQuestions.find(q => q.qNum == currentVal)) {
-        filterSelect.value = currentVal;
-    } else {
-        filterSelect.value = "ALL";
-    }
-
+    cachedQuestions.forEach(q => { filterSelect.innerHTML += `<option value="${q.qNum}">ข้อที่ ${q.qNum}</option>`; });
+    if(cachedQuestions.find(q => q.qNum == currentVal)) { filterSelect.value = currentVal; } else { filterSelect.value = "ALL"; }
     window.renderQuestionList();
   };
 
-  // 🟢 ฟังก์ชันสำหรับวาดรายการข้อสอบตาม Filter (Drop-down)
   window.renderQuestionList = () => {
     let filterVal = document.getElementById('qFilterSelect').value;
     let listContainer = document.getElementById('existingQuestionsList');
     let h = "";
     
     window.allQuizQuestions.forEach(q => {
-      // ตรวจสอบเงื่อนไขตัวกรอง
       if (filterVal !== "ALL" && q.qNum != filterVal) return;
-
-      let m = Math.floor(q.time / 60), s = q.time % 60;
-      let timeText = (m > 0 ? m + " นาที " : "") + s + " วินาที";
-      let qType = q.type || "CHOICE"; 
-      let badgeHtml = qType === "TEXT" ? `<span class="badge badge-text"><i class="fas fa-pen"></i> อัตนัย (ข้อเขียน)</span>` : `<span class="badge badge-choice"><i class="fas fa-list"></i> ปรนัย (ตัวเลือก)</span>`;
+      let m = Math.floor(q.time / 60), s = q.time % 60; let timeText = (m > 0 ? m + " นาที " : "") + s + " วินาที";
+      let qType = q.type || "CHOICE"; let badgeHtml = qType === "TEXT" ? `<span class="badge badge-text"><i class="fas fa-pen"></i> อัตนัย (ข้อเขียน)</span>` : `<span class="badge badge-choice"><i class="fas fa-list"></i> ปรนัย (ตัวเลือก)</span>`;
       let ansText = qType === "TEXT" ? "<span style='color:#7b1fa2;'>ตรวจให้คะแนนเอง</span>" : (q.options && q.options[q.ans - 1] ? q.options[q.ans - 1] : "ไม่ระบุ");
 
       h += `<div class="list-item" style="align-items:flex-start;">
@@ -539,7 +484,6 @@
               </div>
             </div>`;
     });
-    
     listContainer.innerHTML = h || `<div style='text-align:center; padding:30px; color:#7f8c8d;'><i class="fas fa-box-open" style="font-size:30px; margin-bottom:10px;"></i><br>ไม่มีข้อมูลข้อสอบ</div>`;
   };
 
@@ -571,38 +515,20 @@
     
     if(window.isEditing) await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), payload);
     else { payload.qNum = window.allQuizQuestions.length + 1; await addDoc(collection(db, "questions"), payload); }
-    
-    // โหลดข้อสอบใหม่พร้อมกลับไปโหมด "ดูทั้งหมด"
-    document.getElementById('qFilterSelect').value = "ALL";
-    document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); window.resetQForm();
+    document.getElementById('qFilterSelect').value = "ALL"; document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); window.resetQForm();
   };
 
   window.delQ = async (id) => { 
-    if(confirm("ยืนยันลบข้อนี้?")) { 
-        document.getElementById('overlay').classList.remove('hidden'); 
-        await deleteDoc(doc(db, "questions", id)); 
-        // พอโหลดใหม่ให้โชว์ทั้งหมด จะได้เห็นว่าลบไปแล้วเรียงเลขใหม่หรือไม่
-        document.getElementById('qFilterSelect').value = "ALL";
-        document.getElementById('overlay').classList.add('hidden'); 
-        window.loadQuestions(); 
-    } 
+    if(confirm("ยืนยันลบข้อนี้?")) { document.getElementById('overlay').classList.remove('hidden'); await deleteDoc(doc(db, "questions", id)); document.getElementById('qFilterSelect').value = "ALL"; document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); } 
   };
 
   window.loadAnalytics = async () => {
     showView('analyticsView'); document.getElementById('overlay').classList.remove('hidden');
-    let itemAnalysis = {}; let scoresList = []; let totalQs = window.allQuizQuestions.length;
-    window.allQuizQuestions.forEach(q => itemAnalysis[q.qNum] = 0);
-    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
-    rSnap.forEach(r => { let d = r.data(); if(d.result === "WRONG") itemAnalysis[d.qNum] = (itemAnalysis[d.qNum] || 0) + 1; });
-    let sSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID), where("status", "==", "DONE")));
-    sSnap.forEach(s => scoresList.push(s.data().score));
-    document.getElementById('overlay').classList.add('hidden');
-
-    let d1 = [['ข้อที่', 'ตอบผิด']]; for(let q in itemAnalysis) d1.push(["ข้อ "+q, itemAnalysis[q]]);
-    new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์คนตอบผิด', colors: ['#3b0964']});
-    let freq = {}; for(let i=0; i<=totalQs; i++) freq[i] = 0; scoresList.forEach(s => freq[s]++);
-    let d2 = [['คะแนน', 'คน']]; for(let s in freq) d2.push([s+" คะแนน", freq[s]]);
-    new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#ffb300']});
+    let itemAnalysis = {}; let scoresList = []; let totalQs = window.allQuizQuestions.length; window.allQuizQuestions.forEach(q => itemAnalysis[q.qNum] = 0);
+    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID))); rSnap.forEach(r => { let d = r.data(); if(d.result === "WRONG") itemAnalysis[d.qNum] = (itemAnalysis[d.qNum] || 0) + 1; });
+    let sSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID), where("status", "==", "DONE"))); sSnap.forEach(s => scoresList.push(s.data().score)); document.getElementById('overlay').classList.add('hidden');
+    let d1 = [['ข้อที่', 'ตอบผิด']]; for(let q in itemAnalysis) d1.push(["ข้อ "+q, itemAnalysis[q]]); new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์คนตอบผิด', colors: ['#3b0964']});
+    let freq = {}; for(let i=0; i<=totalQs; i++) freq[i] = 0; scoresList.forEach(s => freq[s]++); let d2 = [['คะแนน', 'คน']]; for(let s in freq) d2.push([s+" คะแนน", freq[s]]); new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#ffb300']});
   };
 
   window.loadActiveSessionsForStudent = async () => {
@@ -611,28 +537,18 @@
   };
 
   window.studentJoinQuiz = async () => {
-    window.currentSessionID = document.getElementById('studentSessionSelect').value;
-    window.myStudentID = document.getElementById('studentId').value;
+    window.currentSessionID = document.getElementById('studentSessionSelect').value; window.myStudentID = document.getElementById('studentId').value;
     if(!window.currentSessionID || !window.myStudentID) { alert("กรุณาเลือกวิชาและกรอกรหัส!"); return; }
 
     document.getElementById('overlay').classList.remove('hidden');
-    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
-    let sDoc = await getDoc(scoreRef);
-
+    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID); let sDoc = await getDoc(scoreRef);
     if(sDoc.exists() && sDoc.data().status === "DONE") { alert("คุณได้ส่งข้อสอบนี้ไปแล้ว!"); document.getElementById('overlay').classList.add('hidden'); return; }
     if(!sDoc.exists()) await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING" });
     document.getElementById('overlay').classList.add('hidden');
-    
-    showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; 
-    document.getElementById("qNavigator").innerHTML = "";
+    showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; document.getElementById("qNavigator").innerHTML = "";
 
     if(studentUnsub) studentUnsub();
-    studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (docSnap) => {
-      if(docSnap.data().status === "START") { 
-          studentUnsub(); 
-          window.startExamRouter(docSnap.data()); 
-      }
-    });
+    studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (docSnap) => { if(docSnap.data().status === "START") { studentUnsub(); window.startExamRouter(docSnap.data()); } });
   };
 
   window.startExamRouter = async (sessionData) => {
@@ -644,11 +560,9 @@
     window.currentQIndex = 0; document.getElementById("studentIdDisplay").innerText = "รหัสนักศึกษา: " + window.myStudentID; document.getElementById('overlay').classList.add('hidden');
 
     let mode = sessionData.examMode || "FREE";
-    if(mode === "FREE") { let globalMins = sessionData.globalTime || 60; window.startFreeMode(globalMins * 60); } 
-    else { window.startStrictMode(); }
+    if(mode === "FREE") { let globalMins = sessionData.globalTime || 60; window.startFreeMode(globalMins * 60); } else { window.startStrictMode(); }
   };
 
-  // โหมด FREE
   window.startFreeMode = (totalSeconds) => {
     document.getElementById('freeTimerArea').classList.remove('hidden'); document.getElementById('qNavigator').classList.remove('hidden'); document.getElementById('freeControls').classList.remove('hidden'); document.getElementById('finalSubmitBtn').classList.remove('hidden');
     document.getElementById('strictTimerArea').classList.add('hidden'); document.getElementById('confirmStrictBtn').classList.add('hidden');
@@ -697,7 +611,6 @@
     document.getElementById('overlay').classList.add('hidden'); let totalChoiceQs = window.allQuizQuestions.filter(q => q.type !== "TEXT").length; document.getElementById("finalScoreDisplay").innerText = totalScore + "/" + totalChoiceQs; showView('resultView');
   };
 
-  // โหมด STRICT
   window.startStrictMode = () => {
     document.getElementById('strictTimerArea').classList.remove('hidden'); document.getElementById('freeTimerArea').classList.add('hidden'); document.getElementById('qNavigator').classList.add('hidden'); document.getElementById('freeControls').classList.add('hidden'); document.getElementById('finalSubmitBtn').classList.add('hidden');
     window.renderStrictQuestion();
@@ -714,7 +627,12 @@
 
   window.startStrictTimer = (s) => {
     clearInterval(window.timerInterval); document.getElementById("strictTimerText").innerText = s; document.getElementById("strictTimerFill").style.width = "100%";
-    window.timerInterval = setInterval(() => { s--; document.getElementById("strictTimerText").innerText = s; document.getElementById("strictTimerFill").style.width = (s/window.strictTimeTotal*100) + "%"; if(s <= 0) { clearInterval(window.timerInterval); window.submitStrictAnswer(0); } }, 1000);
+    window.timerInterval = setInterval(() => { 
+      s--; 
+      document.getElementById("strictTimerText").innerText = s; 
+      document.getElementById("strictTimerFill").style.width = (s/window.strictTimeTotal*100) + "%"; 
+      if(s <= 0) { clearInterval(window.timerInterval); window.submitStrictAnswer(0); } 
+    }, 1000);
   };
 
   window.confirmStrictAnswer = () => { 
