@@ -69,12 +69,17 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--main); background: white; box-shadow: 0 0 0 2px rgba(59, 9, 100, 0.1); }
     .list-item { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
     
-    .timer-text { font-size: 35px; font-weight: 600; text-align: right; color: var(--danger); margin-bottom: 0; line-height: 1; font-family: monospace; }
+    /* สไตล์เวลาจับทีละข้อ (STRICT) */
+    .timer-bar { height: 10px; background: #e1e4e8; border-radius: 5px; overflow: hidden; margin-bottom: 20px; } 
+    #timerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; } 
+    .timer-text-strict { font-size: 35px; font-weight: 600; text-align: center; color: var(--danger); margin-bottom: 10px; font-family: monospace; }
+    
+    /* สไตล์เวลารวมอิสระ (FREE) */
+    .timer-text-global { font-size: 28px; font-weight: 600; text-align: right; color: var(--danger); margin-bottom: 0; line-height: 1; font-family: monospace; }
     
     .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 16px; width: 100%; display: block; color: var(--text); transition: 0.2s; } 
     .opt-btn.selected { background: #fffcf5; border-color: var(--secondary); font-weight: 600; color: var(--main); box-shadow: 0 2px 8px rgba(255, 179, 0, 0.15); }
     
-    /* สไตล์สำหรับกล่องเลขข้อสอบ (Navigator) */
     .nav-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 2px solid #e1e4e8; background: white; cursor: pointer; font-weight: 600; transition: 0.2s; color: #7f8c8d; }
     .nav-box:hover { border-color: var(--secondary); }
     .nav-box.answered { background: #2ecc71; color: white; border-color: #2ecc71; }
@@ -143,10 +148,26 @@
 
     <div id="adminManageView" class="hidden">
       <h3 id="manageSessionTitle" style="margin-top:0; text-align:center; color: var(--main);"></h3>
+      
+      <!-- 🟢 เพิ่มแผงตั้งค่า 2 ระบบ (ตามคำสั่งอาจารย์) -->
+      <div class="m-card" style="background: #e8f4f8; border: 1px solid #bce0fd; padding: 15px;">
+        <h4 style="margin-top:0; color: #2980b9;"><i class="fas fa-cogs"></i> ตั้งค่ารูปแบบการสอบ (วิชานี้)</h4>
+        <select id="examModeSelect" onchange="toggleExamModeSetup()" style="font-weight:600; color:var(--accent); margin-bottom:10px;">
+          <option value="FREE">🏃 โหมดอิสระ (เหมาเวลารวม / ข้ามข้อได้)</option>
+          <option value="STRICT">⏳ โหมดบังคับ (จับเวลาทีละข้อ / ข้ามไม่ได้)</option>
+        </select>
+        <div id="globalTimeSetup">
+          <label style="font-size:13px; color:#7f8c8d;">เวลาสอบรวมทั้งหมด (นาที)</label>
+          <input type="number" id="globalTimeInput" placeholder="เช่น 50, 60 หรือ 90" value="60">
+        </div>
+        <button class="btn-main" style="background:#2980b9; margin-bottom:0;" onclick="saveSessionSettings()"><i class="fas fa-save"></i> บันทึกการตั้งค่ารูปแบบการสอบ</button>
+      </div>
+
       <div class="live-counter-card">
         <div class="counter-row"><span><i class="fas fa-users"></i> นักศึกษาในห้อง (Real-time)</span><span id="waitCountDisplay" class="counter-num">0</span></div>
         <div class="counter-row"><span><i class="fas fa-check-circle" style="color:#2ecc71;"></i> ส่งข้อสอบแล้ว</span><span id="finishCountDisplay" class="counter-num">0</span></div>
       </div>
+      
       <div class="m-card">
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom:15px;">
           <button id="btnStatWAITING" class="btn-outline" style="font-size:12px;" onclick="changeStatus('WAITING')">ห้องรอ</button>
@@ -167,7 +188,7 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
           <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5" style="margin-bottom:0;">
           <input type="number" id="aiNumOpt" placeholder="จำนวนตัวเลือก" value="4" style="margin-bottom:0;">
-          <input type="number" id="aiMin" placeholder="นาที" value="0" style="margin-bottom:0;">
+          <input type="number" id="aiMin" placeholder="นาที (ถ้าโหมดบังคับ)" value="0" style="margin-bottom:0;">
           <input type="number" id="aiSec" placeholder="วินาที" value="30" style="margin-bottom:0;">
         </div>
         <button class="btn-main" style="background: var(--accent);" onclick="runAI()" id="btnAiRun">สั่ง AI สร้างทันที</button>
@@ -191,7 +212,7 @@
         </div>
 
         <div style="display:flex; gap:10px; margin-top:15px;">
-          <input type="number" id="qMin" placeholder="นาที" value="0">
+          <input type="number" id="qMin" placeholder="นาที (ใช้ในโหมดบังคับ)" value="0">
           <input type="number" id="qSec" placeholder="วินาที" value="30">
         </div>
         <button class="btn-main" onclick="handleQuestionSubmit()">บันทึก และเริ่มพิมพ์ข้อต่อไป</button>
@@ -210,7 +231,6 @@
       </div>
     </div>
 
-    <!-- STUDENT VIEWS -->
     <div id="studentDashboardView" class="hidden">
       <div class="m-card" style="text-align:center;">
         <i class="fas fa-graduation-cap" style="font-size: 50px; color: var(--main);"></i>
@@ -233,7 +253,7 @@
       </div>
     </div>
 
-    <!-- 🟢 หน้าจอสอบแบบใหม่ (อิสระ ข้ามไปมาได้) -->
+    <!-- 🟢 หน้าจอสอบของนักศึกษา (รองรับ 2 ระบบเวลา) -->
     <div id="quizView" class="hidden">
       <div class="m-card" style="padding: 15px; margin-bottom: 15px; border-bottom: 4px solid var(--secondary);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
@@ -241,13 +261,22 @@
             <span id="studentIdDisplay" style="font-size:13px; color: #7f8c8d; display:block;">ID: --</span>
             <span id="qCounter" style="font-weight:600; color:var(--main); font-size:16px;">ข้อที่ -- / --</span>
           </div>
-          <div>
-            <small style="color:var(--danger); font-weight:600; display:block; text-align:right;">เวลาเหลือ</small>
-            <div class="timer-text" id="globalTimer">--:--</div>
+          
+          <!-- แผงเวลาสำหรับ "โหมดอิสระ (FREE)" -->
+          <div id="freeTimerArea" class="hidden">
+            <small style="color:var(--danger); font-weight:600; display:block; text-align:right;">เวลาเหลือรวม</small>
+            <div class="timer-text-global" id="globalTimer">--:--</div>
           </div>
         </div>
-        <!-- กล่อง Navigator นำทางข้อสอบ -->
-        <div id="qNavigator" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; padding: 5px 0;"></div>
+        
+        <!-- แผงเวลาสำหรับ "โหมดบังคับทีละข้อ (STRICT)" -->
+        <div id="strictTimerArea" class="hidden">
+          <div class="timer-text-strict" id="strictTimerText">--</div>
+          <div class="timer-bar"><div id="strictTimerFill"></div></div>
+        </div>
+
+        <!-- Navigator จะโชว์เฉพาะโหมด FREE -->
+        <div id="qNavigator" class="hidden" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; padding: 5px 0;"></div>
       </div>
 
       <div class="m-card" style="min-height: 250px;">
@@ -255,12 +284,15 @@
         <div id="optionsContainer"></div>
       </div>
 
-      <div style="display:flex; justify-content:space-between; gap: 10px;">
+      <!-- ปุ่มควบคุมสำหรับ "โหมดอิสระ (FREE)" -->
+      <div id="freeControls" class="hidden" style="display:flex; justify-content:space-between; gap: 10px;">
         <button class="btn-outline" onclick="goPrevQ()"><i class="fas fa-chevron-left"></i> ย้อนกลับ</button>
         <button class="btn-outline" onclick="goNextQ()">ถัดไป <i class="fas fa-chevron-right"></i></button>
       </div>
+      <button id="finalSubmitBtn" class="btn-danger hidden" style="margin-top:20px; padding: 15px; border-radius: 15px;" onclick="submitFinalExam()"><i class="fas fa-paper-plane"></i> ส่งข้อสอบ (จบการทำแบบทดสอบ)</button>
 
-      <button id="finalSubmitBtn" class="btn-danger" style="margin-top:20px; padding: 15px; border-radius: 15px;" onclick="submitFinalExam()"><i class="fas fa-paper-plane"></i> ส่งข้อสอบ (จบการทำแบบทดสอบ)</button>
+      <!-- ปุ่มควบคุมสำหรับ "โหมดบังคับ (STRICT)" -->
+      <button id="confirmStrictBtn" class="btn-main hidden" onclick="confirmStrictAnswer()">ยืนยันคำตอบข้อนี้</button>
     </div>
 
     <div id="resultView" class="hidden" style="text-align:center;">
@@ -314,12 +346,17 @@
   let adminUnsub = null;
   let studentUnsub = null;
 
-  // 🟢 ตัวแปรสำหรับระบบสอบแบบใหม่ (ข้ามข้อได้)
+  // 🟢 ตัวแปรสำหรับคุม 2 ระบบเวลา
   window.allQuizQuestions = [];
   window.currentQIndex = 0;
-  window.myAnswers = {}; // เก็บคำตอบไว้ในเครื่องก่อนส่งทีเดียว
-  window.globalTimeTotal = 0;
   window.timerInterval = null;
+  
+  // สำหรับโหมด FREE
+  window.myAnswers = {}; 
+  
+  // สำหรับโหมด STRICT
+  window.strictTimeTotal = 30;
+  window.userStrictChoice = null;
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
 
@@ -366,7 +403,8 @@
 
   window.createSession = async () => {
     let n = document.getElementById('newSessionName').value || "วิชาใหม่";
-    let docRef = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", createdAt: Date.now() });
+    // 🟢 สร้างวิชาใหม่ โหมดพื้นฐานคือ FREE 60 นาที
+    let docRef = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, createdAt: Date.now() });
     window.manageSession(docRef.id, n, "WAITING");
   };
 
@@ -387,17 +425,24 @@
     try {
       let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
       sc.forEach(d => deleteDoc(d.ref));
-      
       let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
       rs.forEach(d => deleteDoc(d.ref));
-      
-      alert("ล้างข้อมูลคะแนนเรียบร้อยแล้วครับ! สามารถให้นักศึกษากลุ่มใหม่เข้ามาสอบได้เลย");
+      alert("ล้างข้อมูลคะแนนเรียบร้อยแล้วครับ!");
     } catch(e) { alert("เกิดข้อผิดพลาดในการล้างข้อมูล: " + e.message); }
     document.getElementById('overlay').classList.add('hidden');
   };
 
-  window.manageSession = (id, name, status) => {
+  // 🟢 ดึงข้อมูลแผงตั้งค่าเมื่อกดปุ่มจัดการวิชา
+  window.manageSession = async (id, name, status) => {
     window.currentSessionID = id; document.getElementById('manageSessionTitle').innerText = name;
+    
+    // โหลดการตั้งค่าวิชานี้มาโชว์
+    let sDoc = await getDoc(doc(db, "sessions", id));
+    let sData = sDoc.data() || {};
+    document.getElementById('examModeSelect').value = sData.examMode || "FREE";
+    document.getElementById('globalTimeInput').value = sData.globalTime || 60;
+    window.toggleExamModeSetup();
+
     showView('adminManageView'); window.loadQuestions(); window.resetQForm(); window.updateStatusUI(status);
     
     if(adminUnsub) adminUnsub();
@@ -407,6 +452,21 @@
       document.getElementById('waitCountDisplay').innerText = wait + finish;
       document.getElementById('finishCountDisplay').innerText = finish;
     });
+  };
+
+  window.toggleExamModeSetup = () => {
+    let mode = document.getElementById('examModeSelect').value;
+    if(mode === "FREE") document.getElementById('globalTimeSetup').classList.remove('hidden');
+    else document.getElementById('globalTimeSetup').classList.add('hidden');
+  };
+
+  window.saveSessionSettings = async () => {
+    document.getElementById('overlay').classList.remove('hidden');
+    let mode = document.getElementById('examModeSelect').value;
+    let time = parseInt(document.getElementById('globalTimeInput').value) || 60;
+    await updateDoc(doc(db, "sessions", window.currentSessionID), { examMode: mode, globalTime: time });
+    document.getElementById('overlay').classList.add('hidden');
+    alert("บันทึกการตั้งค่ารูปแบบการสอบเรียบร้อยแล้วครับ!");
   };
 
   window.updateStatusUI = (st) => {
@@ -462,16 +522,11 @@
     document.getElementById('overlay').classList.remove('hidden');
     try {
       let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
-      let textQs = [];
-      qSnap.forEach(d => { if (d.data().type === "TEXT") textQs.push(d.data().qNum); });
-      textQs.sort((a,b) => a - b);
-
+      let textQs = []; qSnap.forEach(d => { if (d.data().type === "TEXT") textQs.push(d.data().qNum); }); textQs.sort((a,b) => a - b);
       let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
       if (scSnap.empty) { alert("ยังไม่มีข้อมูลนักศึกษาในวิชานี้ครับ"); document.getElementById('overlay').classList.add('hidden'); return; }
-
       let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
-      let responsesMap = {}; 
-      rSnap.forEach(r => { let d = r.data(); if (d.type === "TEXT") responsesMap[`${d.studentID}_${d.qNum}`] = d.textAnswer || ""; });
+      let responsesMap = {}; rSnap.forEach(r => { let d = r.data(); if (d.type === "TEXT") responsesMap[`${d.studentID}_${d.qNum}`] = d.textAnswer || ""; });
 
       let csvContent = "\uFEFF"; 
       csvContent += "รหัสนักศึกษา,ชื่อ-นามสกุล,คะแนน (เฉพาะช้อยส์),สถานะ";
@@ -483,17 +538,13 @@
         let statusText = d.status === "DONE" ? "ส่งข้อสอบแล้ว" : "อยู่ในห้องสอบ";
         let safeName = (d.studentName || "").replace(/"/g, '""');
         csvContent += `"${d.studentID}","${safeName}","${d.score}","${statusText}"`;
-        textQs.forEach(qNum => {
-          let ans = responsesMap[`${d.studentID}_${qNum}`] || "";
-          csvContent += `,"${ans.replace(/"/g, '""')}"`;
-        });
+        textQs.forEach(qNum => { let ans = responsesMap[`${d.studentID}_${qNum}`] || ""; csvContent += `,"${ans.replace(/"/g, '""')}"`; });
         csvContent += "\n";
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      let sessionName = document.getElementById('manageSessionTitle').innerText;
+      const link = document.createElement("a"); let sessionName = document.getElementById('manageSessionTitle').innerText;
       link.setAttribute("href", url); link.setAttribute("download", `คะแนนและคำตอบ_${sessionName}.csv`);
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     } catch(e) { alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message); }
@@ -503,7 +554,7 @@
   window.loadQuestions = async () => {
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
     let cachedQuestions = []; qSnap.forEach(d => cachedQuestions.push({ id: d.id, ...d.data() }));
-    cachedQuestions.sort((a,b) => a.qNum - b.qNum); window.allQuizQuestions = cachedQuestions; // for edit mode tracking
+    cachedQuestions.sort((a,b) => a.qNum - b.qNum); window.allQuizQuestions = cachedQuestions; 
 
     let h = "";
     cachedQuestions.forEach(q => {
@@ -592,38 +643,57 @@
     if(!sDoc.exists()) await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING" });
     document.getElementById('overlay').classList.add('hidden');
     
-    showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; document.getElementById("qNavigator").innerHTML = "";
+    showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; 
+    document.getElementById("qNavigator").innerHTML = "";
 
     if(studentUnsub) studentUnsub();
     studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (docSnap) => {
-      if(docSnap.data().status === "START") { studentUnsub(); window.startExamFreeMode(); }
+      if(docSnap.data().status === "START") { 
+          studentUnsub(); 
+          window.startExamRouter(docSnap.data()); 
+      }
     });
   };
 
-  // 🟢 เริ่มต้นสอบ (โหมดอิสระ นำเวลาทุกข้อมารวมกัน)
-  window.startExamFreeMode = async () => {
+  // 🟢 ตัวแยกทางแยกระบบการสอบ 2 โหมด
+  window.startExamRouter = async (sessionData) => {
     document.getElementById('overlay').classList.remove('hidden');
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
     
     window.allQuizQuestions = [];
-    window.globalTimeTotal = 0;
-    qSnap.forEach(d => {
-        let q = d.data();
-        window.allQuizQuestions.push(q);
-        window.globalTimeTotal += q.time; // นำเวลาทุกข้อมารวมกันเป็นเวลาสุทธิ
-    });
+    qSnap.forEach(d => window.allQuizQuestions.push(d.data()));
     window.allQuizQuestions.sort((a,b) => a.qNum - b.qNum);
 
     if(window.allQuizQuestions.length === 0) { alert("ยังไม่มีข้อสอบในระบบ"); document.getElementById('overlay').classList.add('hidden'); return; }
 
     window.currentQIndex = 0;
-    window.myAnswers = {}; // เคลียร์คำตอบในเครื่อง
-    
-    document.getElementById('overlay').classList.add('hidden');
     document.getElementById("studentIdDisplay").innerText = "รหัสนักศึกษา: " + window.myStudentID;
+    document.getElementById('overlay').classList.add('hidden');
+
+    let mode = sessionData.examMode || "FREE";
+    if(mode === "FREE") {
+        let globalMins = sessionData.globalTime || 60;
+        window.startFreeMode(globalMins * 60);
+    } else {
+        window.startStrictMode();
+    }
+  };
+
+  // ============================================
+  // ระบบที่ 1: โหมดอิสระ (FREE) ข้ามข้อได้ จับเวลารวม
+  // ============================================
+  window.startFreeMode = (totalSeconds) => {
+    document.getElementById('freeTimerArea').classList.remove('hidden');
+    document.getElementById('qNavigator').classList.remove('hidden');
+    document.getElementById('freeControls').classList.remove('hidden');
+    document.getElementById('finalSubmitBtn').classList.remove('hidden');
     
-    window.startGlobalTimer(window.globalTimeTotal);
-    window.renderCurrentQuestion();
+    document.getElementById('strictTimerArea').classList.add('hidden');
+    document.getElementById('confirmStrictBtn').classList.add('hidden');
+
+    window.myAnswers = {};
+    window.startGlobalTimer(totalSeconds);
+    window.renderFreeQuestion();
   };
 
   window.startGlobalTimer = (totalSeconds) => {
@@ -645,104 +715,169 @@
     }, 1000);
   };
 
-  window.renderCurrentQuestion = () => {
+  window.renderFreeQuestion = () => {
     let q = window.allQuizQuestions[window.currentQIndex];
     document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`;
     document.getElementById("questionText").innerText = `${q.qNum}. ${q.question}`;
     
-    let optsContainer = document.getElementById("optionsContainer");
-    optsContainer.innerHTML = "";
-    
-    let savedAnswer = window.myAnswers[q.qNum]; // ดึงคำตอบเก่าที่เด็กเคยเลือกไว้
+    let optsContainer = document.getElementById("optionsContainer"); optsContainer.innerHTML = "";
+    let savedAnswer = window.myAnswers[q.qNum]; 
     
     if(q.type === "TEXT") {
-        let val = savedAnswer || "";
-        optsContainer.innerHTML = `<textarea id="essayAnswer" rows="6" oninput="window.saveTempAnswer(this.value)" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;">${val}</textarea>`;
+        optsContainer.innerHTML = `<textarea id="essayAnswer" rows="6" oninput="window.saveTempAnswer(this.value)" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;">${savedAnswer || ""}</textarea>`;
     } else {
         q.options.forEach((opt, idx) => {
-            let b = document.createElement("button");
-            b.className = "opt-btn";
-            if(savedAnswer === idx+1) b.classList.add("selected"); // ไฮไลท์ข้อที่เคยตอบ
+            let b = document.createElement("button"); b.className = "opt-btn";
+            if(savedAnswer === idx+1) b.classList.add("selected");
             b.innerText = opt;
-            b.onclick = () => {
-                document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected"));
-                b.classList.add("selected");
-                window.saveTempAnswer(idx+1);
-            };
+            b.onclick = () => { document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); window.saveTempAnswer(idx+1); };
             optsContainer.appendChild(b);
         });
     }
-    window.renderNavigator(); // อัปเดตสีกล่องนำทาง
-  };
-
-  // บันทึกคำตอบลงในหน่วยความจำเครื่อง และเปลี่ยนสีกล่อง
-  window.saveTempAnswer = (ans) => {
-    let qNum = window.allQuizQuestions[window.currentQIndex].qNum;
-    window.myAnswers[qNum] = ans;
     window.renderNavigator();
   };
 
-  // เปลี่ยนสีกล่องนำทาง
+  window.saveTempAnswer = (ans) => { window.myAnswers[window.allQuizQuestions[window.currentQIndex].qNum] = ans; window.renderNavigator(); };
+
   window.renderNavigator = () => {
-    let nav = document.getElementById("qNavigator");
-    nav.innerHTML = "";
+    let nav = document.getElementById("qNavigator"); nav.innerHTML = "";
     window.allQuizQuestions.forEach((q, idx) => {
-        let box = document.createElement("div");
-        box.className = "nav-box";
-        box.innerText = q.qNum;
-        
-        if(idx === window.currentQIndex) box.classList.add("current"); // กำลังอยู่หน้านี้
-        if(window.myAnswers[q.qNum] !== undefined && window.myAnswers[q.qNum] !== "") box.classList.add("answered"); // ตอบแล้ว (สีเขียว)
-        
-        box.onclick = () => { window.currentQIndex = idx; window.renderCurrentQuestion(); };
+        let box = document.createElement("div"); box.className = "nav-box"; box.innerText = q.qNum;
+        if(idx === window.currentQIndex) box.classList.add("current"); 
+        if(window.myAnswers[q.qNum] !== undefined && window.myAnswers[q.qNum] !== "") box.classList.add("answered"); 
+        box.onclick = () => { window.currentQIndex = idx; window.renderFreeQuestion(); };
         nav.appendChild(box);
     });
   };
 
-  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderCurrentQuestion(); } };
-  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length - 1) { window.currentQIndex++; window.renderCurrentQuestion(); } };
+  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderFreeQuestion(); } };
+  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length - 1) { window.currentQIndex++; window.renderFreeQuestion(); } };
 
-  // 🟢 ฟังก์ชันส่งข้อสอบรวดเดียวจบ
   window.submitFinalExam = async () => {
-    // ถ้ากดยกเลิกตอนมีเวลาเหลือ ให้กลับไปทำต่อ แต่ถ้าเวลาหมดแล้วห้ามยกเลิก
     if(document.getElementById("globalTimer").innerText !== "00:00") {
         if(!confirm("คุณต้องการส่งข้อสอบใช่หรือไม่?\n(ตรวจทานคำตอบให้เรียบร้อยก่อนกดยืนยัน)")) return;
     }
-
-    clearInterval(window.timerInterval);
-    document.getElementById('overlay').classList.remove('hidden');
-
-    let totalScore = 0;
-    const batch = writeBatch(db); 
+    clearInterval(window.timerInterval); document.getElementById('overlay').classList.remove('hidden');
+    let totalScore = 0; const batch = writeBatch(db); 
     
-    // วนลูปตรวจทุกข้อ แล้วบันทึกลง Firebase พร้อมกันทีเดียว
     window.allQuizQuestions.forEach(q => {
-        let ans = window.myAnswers[q.qNum];
-        let isCorrect = false;
+        let ans = window.myAnswers[q.qNum]; let isCorrect = false;
         let payload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type || "CHOICE" };
-
-        if(q.type === "TEXT") {
-            payload.result = "MANUAL_CHECK";
-            payload.textAnswer = ans || "";
-        } else {
-            isCorrect = (ans === q.ans && ans !== undefined);
-            payload.result = isCorrect ? "RIGHT" : "WRONG";
-            if(isCorrect) totalScore++;
-        }
-
-        let responseRef = doc(collection(db, "responses"));
-        batch.set(responseRef, payload);
+        if(q.type === "TEXT") { payload.result = "MANUAL_CHECK"; payload.textAnswer = ans || ""; } 
+        else { isCorrect = (ans === q.ans && ans !== undefined); payload.result = isCorrect ? "RIGHT" : "WRONG"; if(isCorrect) totalScore++; }
+        let responseRef = doc(collection(db, "responses")); batch.set(responseRef, payload);
     });
 
     let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
     batch.update(scoreRef, { score: totalScore, status: "DONE" });
-
     await batch.commit();
 
     document.getElementById('overlay').classList.add('hidden');
     let totalChoiceQs = window.allQuizQuestions.filter(q => q.type !== "TEXT").length;
-    document.getElementById("finalScoreDisplay").innerText = totalScore + "/" + totalChoiceQs;
-    showView('resultView');
+    document.getElementById("finalScoreDisplay").innerText = totalScore + "/" + totalChoiceQs; showView('resultView');
+  };
+
+  // ============================================
+  // ระบบที่ 2: โหมดบังคับ (STRICT) ทำทีละข้อ จับเวลารายข้อ
+  // ============================================
+  window.startStrictMode = () => {
+    document.getElementById('strictTimerArea').classList.remove('hidden');
+    
+    document.getElementById('freeTimerArea').classList.add('hidden');
+    document.getElementById('qNavigator').classList.add('hidden');
+    document.getElementById('freeControls').classList.add('hidden');
+    document.getElementById('finalSubmitBtn').classList.add('hidden');
+
+    window.renderStrictQuestion();
+  };
+
+  window.renderStrictQuestion = () => {
+    window.userStrictChoice = null; document.getElementById("confirmStrictBtn").classList.add("hidden");
+    let q = window.allQuizQuestions[window.currentQIndex];
+    document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`;
+    document.getElementById("questionText").innerText = `${q.qNum}. ${q.question}`;
+    
+    let optsContainer = document.getElementById("optionsContainer"); optsContainer.innerHTML = "";
+    
+    if(q.type === "TEXT") {
+        window.userStrictChoice = "TEXT_MODE_FLAG"; 
+        optsContainer.innerHTML = `<textarea id="strictEssayAnswer" rows="6" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;"></textarea>`;
+        document.getElementById("confirmStrictBtn").classList.remove("hidden"); 
+    } else {
+        q.options.forEach((opt, idx) => {
+            let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = opt;
+            b.onclick = () => { window.userStrictChoice = idx+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmStrictBtn").classList.remove("hidden"); };
+            optsContainer.appendChild(b);
+        });
+    }
+    
+    window.strictTimeTotal = q.time; 
+    window.startStrictTimer(q.time);
+  };
+
+  window.startStrictTimer = (s) => {
+    clearInterval(window.timerInterval); 
+    document.getElementById("strictTimerText").innerText = s; 
+    document.getElementById("strictTimerFill").style.width = "100%";
+    
+    window.timerInterval = setInterval(() => { 
+        s--; 
+        document.getElementById("strictTimerText").innerText = s; 
+        document.getElementById("strictTimerFill").style.width = (s/window.strictTimeTotal*100) + "%"; 
+        if(s <= 0) { 
+            clearInterval(window.timerInterval); 
+            window.submitStrictAnswer(0); // หมดเวลา ส่ง 0 ทันที
+        } 
+    }, 1000);
+  };
+
+  window.confirmStrictAnswer = () => { 
+    if(window.userStrictChoice === "TEXT_MODE_FLAG") {
+      let essayAns = document.getElementById("strictEssayAnswer").value.trim();
+      if(!essayAns) { alert("กรุณาพิมพ์คำตอบก่อนกดยืนยันครับ"); return; }
+      document.getElementById("confirmStrictBtn").classList.add("hidden"); 
+      window.submitStrictAnswer(essayAns);
+    } else if(window.userStrictChoice) { 
+      document.getElementById("confirmStrictBtn").classList.add("hidden"); 
+      window.submitStrictAnswer(window.userStrictChoice); 
+    } 
+  };
+
+  window.submitStrictAnswer = async (choiceOrText) => {
+    clearInterval(window.timerInterval); document.getElementById('overlay').classList.remove('hidden');
+    let q = window.allQuizQuestions[window.currentQIndex];
+    let isCorrect = false;
+    let responsePayload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type || "CHOICE" };
+
+    if(q.type === "TEXT") {
+      responsePayload.result = "MANUAL_CHECK";
+      responsePayload.textAnswer = choiceOrText; 
+    } else {
+      isCorrect = (choiceOrText === q.ans && choiceOrText !== 0);
+      responsePayload.result = isCorrect ? "RIGHT" : "WRONG";
+    }
+    
+    await addDoc(collection(db, "responses"), responsePayload);
+    
+    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+    let sDoc = await getDoc(scoreRef); let curScore = sDoc.data().score;
+    
+    // อัปเดตคะแนนทันทีที่ตอบทีละข้อ
+    let newScore = isCorrect ? curScore + 1 : curScore;
+    let isLastQ = (window.currentQIndex >= window.allQuizQuestions.length - 1);
+    
+    await updateDoc(scoreRef, { score: newScore, status: isLastQ ? "DONE" : "WAITING" });
+    
+    document.getElementById('overlay').classList.add('hidden'); 
+    
+    if(isLastQ) {
+        let totalChoiceQs = window.allQuizQuestions.filter(x => x.type !== "TEXT").length;
+        document.getElementById("finalScoreDisplay").innerText = newScore + "/" + totalChoiceQs;
+        showView('resultView');
+    } else {
+        window.currentQIndex++; 
+        window.renderStrictQuestion();
+    }
   };
 
   window.searchPortal = async () => {
@@ -759,9 +894,7 @@
     document.getElementById('portalResult').innerHTML = h; document.getElementById('overlay').classList.add('hidden');
   };
 
-  window.addEventListener('DOMContentLoaded', (event) => {
-      window.resetQForm();
-  });
+  window.addEventListener('DOMContentLoaded', (event) => { window.resetQForm(); });
 </script>
 </body>
 </html>
