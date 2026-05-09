@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบแบบทดสอบออนไลน์ (Firebase Edition)</title>
+  
+  <!-- ระบบแจ้งเตือน Error อัตโนมัติ (ช่วยหาบั๊ก) -->
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("พบข้อผิดพลาดในโค้ด (บรรทัดที่ " + lineno + "):\n" + message + "\n\nรบกวนแคปจอนี้ส่งให้ผมดูนะครับ!");
+      return false;
+    };
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -271,7 +280,6 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  // ✅ ผมใส่กุญแจ AI แบบหั่นครึ่งให้เรียบร้อยแล้วครับ! วางทับได้เลย ปลอดภัย 100%
   const keyPart1 = "AIzaSyDNxskry9uHn_A-"; 
   const keyPart2 = "Lh_KUQnUTBkkLkdHy3I"; 
   const MY_SECRET_TOKEN = keyPart1 + keyPart2;
@@ -396,8 +404,10 @@
       if(json.error) throw new Error(json.error.message);
       
       let rawText = json.candidates[0].content.parts[0].text;
-      let cleanText = rawText.replace(/```json/g, "").replace(/
-```/g, "").trim();
+      
+      // ✅ แก้ไขวิธีดึงข้อความ AI แบบหลบสัญลักษณ์เจ้าปัญหา ป้องกันโค้ดแหว่ง
+      let mark = "`" + "`" + "`"; 
+      let cleanText = rawText.split(mark + "json").join("").split(mark).join("").trim();
       let aiResponse = JSON.parse(cleanText);
 
       let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
@@ -684,21 +694,10 @@
     document.getElementById('overlay').classList.add('hidden'); window.currentQNum++; window.loadNext();
   };
 
-  window.searchPortal = async () => {
-    document.getElementById('overlay').classList.remove('hidden'); let id = document.getElementById('portalId').value;
-    let scSnap = await getDocs(query(collection(db, "scores"), where("studentID", "==", id))); let h = "<h4>ผลการสอบ</h4>";
-    if(scSnap.empty) h += "ไม่พบข้อมูล";
-    else {
-      for (let scDoc of scSnap.docs) {
-        let sData = scDoc.data(); let sessionSnap = await getDoc(doc(db, "sessions", sData.sessionID));
-        let sName = sessionSnap.exists() ? sessionSnap.data().name : "ไม่ระบุวิชา";
-        h += `<div class="list-item"><span><b style="color:var(--text);">${sName}</b>: ${sData.score} คะแนน</span></div>`;
-      }
-    }
-    document.getElementById('portalResult').innerHTML = h; document.getElementById('overlay').classList.add('hidden');
-  };
-
-  window.resetQForm();
+  // ✅ ใส่เพื่อรับประกันว่า DOM พร้อมใช้งานจริงๆ
+  window.addEventListener('DOMContentLoaded', (event) => {
+      window.resetQForm();
+  });
 </script>
 </body>
 </html>
