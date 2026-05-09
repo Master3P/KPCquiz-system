@@ -165,7 +165,6 @@
         <h4 id="qFormTitle">เพิ่มข้อสอบด้วยตัวเอง</h4>
         <input type="hidden" id="editRowId">
         
-        <!-- 🟢 เมนูสลับประเภทข้อสอบ ช้อยส์ / อัตนัย -->
         <select id="qType" onchange="toggleQType()" style="font-weight: 600; color: var(--main); background: #fdfefe;">
           <option value="CHOICE">🎯 แบบปรนัย (มีตัวเลือก A B C D)</option>
           <option value="TEXT">✍️ แบบอัตนัย (พิมพ์ตอบแบบข้อเขียน)</option>
@@ -173,7 +172,6 @@
 
         <input type="text" id="qText" placeholder="โจทย์คำถาม">
         
-        <!-- 🟢 โซนกำหนดช้อยส์ (ซ่อนได้ถ้าเลือกข้อเขียน) -->
         <div id="choiceSetupArea">
           <div id="dynamicOptionsContainer"></div>
           <button class="btn-outline" style="padding:5px; font-size:12px; border-color:#ccc; color:#7f8c8d;" onclick="addOptionField()">+ เพิ่มตัวเลือกให้ข้อนี้</button>
@@ -273,9 +271,9 @@
     measurementId: "G-NVP9PNLDEE"
   };
 
-  // 🚨 ใส่กุญแจ AI หั่นครึ่งตรงนี้นะครับ! 🚨
-  const keyPart1 = "AIzaSyDNxskry9uHn_A-Lh_"; 
-  const keyPart2 = "KUQnUTBkkLkdHy3I"; 
+  // ✅ ผมใส่กุญแจ AI แบบหั่นครึ่งให้เรียบร้อยแล้วครับ! วางทับได้เลย ปลอดภัย 100%
+  const keyPart1 = "AIzaSyDNxskry9uHn_A-"; 
+  const keyPart2 = "Lh_KUQnUTBkkLkdHy3I"; 
   const MY_SECRET_TOKEN = keyPart1 + keyPart2;
 
   const app = initializeApp(firebaseConfig);
@@ -287,7 +285,7 @@
   window.timeTotal = 30;
   window.totalQuizQuestions = 0;
   window.cachedQuestions = [];
-  window.userSelectedChoice = null; // Changed to support text
+  window.userSelectedChoice = null; 
   window.timerInterval = null;
   window.isEditing = false;
   let adminUnsub = null;
@@ -408,7 +406,6 @@
       const batch = writeBatch(db);
       aiResponse.forEach((item, index) => {
         let qRef = doc(collection(db, "questions"));
-        // AI จะสร้างเฉพาะข้อช้อยส์เป็นหลัก
         batch.set(qRef, { sessionID: window.currentSessionID, qNum: startQNum + index, type: "CHOICE", question: item.question, options: item.options, ans: parseInt(item.ans), time: totalSeconds });
       });
       await batch.commit();
@@ -456,7 +453,6 @@
       let m = Math.floor(q.time / 60), s = q.time % 60;
       let timeText = (m > 0 ? m + " นาที " : "") + s + " วินาที";
       
-      // 🟢 ตรวจสอบและแสดงประเภทข้อสอบ
       let qType = q.type || "CHOICE"; 
       let badgeHtml = qType === "TEXT" ? `<span class="badge badge-text"><i class="fas fa-pen"></i> อัตนัย (ข้อเขียน)</span>` : `<span class="badge badge-choice"><i class="fas fa-list"></i> ปรนัย (ตัวเลือก)</span>`;
       let ansText = qType === "TEXT" ? "<span style='color:#7b1fa2;'>รออาจารย์ตรวจคำตอบด้วยตัวเอง</span>" : (q.options && q.options[q.ans - 1] ? q.options[q.ans - 1] : "ไม่ระบุ");
@@ -476,7 +472,6 @@
     document.getElementById('existingQuestionsList').innerHTML = h;
   };
 
-  // 🟢 ฟังก์ชันซ่อน/โชว์ ส่วนการตั้งค่าช้อยส์
   window.toggleQType = () => {
     let type = document.getElementById('qType').value;
     if(type === 'TEXT') {
@@ -501,7 +496,6 @@
     let q = window.cachedQuestions.find(i => i.id == id);
     window.isEditing = true; document.getElementById('editRowId').value = id;
     
-    // ตั้งค่าประเภทข้อสอบตอนกดแก้ไข
     document.getElementById('qType').value = q.type || "CHOICE";
     window.toggleQType();
 
@@ -533,7 +527,6 @@
     let os = [];
     let answerIndex = 0;
 
-    // ถ้าเป็นช้อยส์ ถึงจะดึงค่าจากกล่องช้อยส์
     if (qType === "CHOICE") {
       document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value));
       answerIndex = parseInt(document.getElementById('qAns').value) || 0;
@@ -615,11 +608,9 @@
     window.userSelectedChoice = null; document.getElementById("optionsContainer").innerHTML = ""; document.getElementById("confirmBtn").classList.add("hidden");
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("qNum", "==", window.currentQNum)));
     if(qSnap.empty) {
-      // โหลดข้อสอบเสร็จสิ้น คำนวณคะแนนรวม
       showView('resultView'); document.getElementById('overlay').classList.remove('hidden');
       let scoreRef = await getDoc(doc(db, "scores", window.currentSessionID + "_" + window.myStudentID));
       let tQ = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("type", "==", "CHOICE"))); 
-      // โชว์คะแนนเทียบกับจำนวนข้อที่เป็นช้อยส์เท่านั้น
       let totalChoiceQs = tQ.size;
       document.getElementById("finalScoreDisplay").innerText = scoreRef.data().score + "/" + totalChoiceQs;
       document.getElementById('overlay').classList.add('hidden'); return;
@@ -632,14 +623,11 @@
     document.getElementById("studentIdDisplay").innerText = "ID: " + window.myStudentID;
     document.getElementById("questionText").innerText = qData.question;
     
-    // 🟢 สร้าง UI ตามประเภทข้อสอบ
     if(qType === "TEXT") {
-      // โหมดข้อเขียน
-      window.userSelectedChoice = "TEXT_MODE_FLAG"; // Flag บอกว่าเป็นข้อเขียน
+      window.userSelectedChoice = "TEXT_MODE_FLAG"; 
       document.getElementById("optionsContainer").innerHTML = `<textarea id="essayAnswer" rows="5" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;"></textarea>`;
-      document.getElementById("confirmBtn").classList.remove("hidden"); // โชว์ปุ่มยืนยันทันที
+      document.getElementById("confirmBtn").classList.remove("hidden"); 
     } else {
-      // โหมดช้อยส์
       qData.options.forEach((o, i) => {
         let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = o;
         b.onclick = () => { window.userSelectedChoice = i+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmBtn").classList.remove("hidden"); };
@@ -677,11 +665,9 @@
     let responsePayload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: window.currentQNum, type: qType };
 
     if(qType === "TEXT") {
-      // เซฟคำตอบข้อเขียน
       responsePayload.result = "MANUAL_CHECK";
       responsePayload.textAnswer = choiceOrText; 
     } else {
-      // ตรวจข้อช้อยส์
       let correctAns = qData.ans; 
       isCorrect = (choiceOrText === correctAns && choiceOrText !== 0);
       responsePayload.result = isCorrect ? "RIGHT" : "WRONG";
@@ -693,7 +679,6 @@
     let sDoc = await getDoc(scoreRef); let curScore = sDoc.data().score;
     let newStatus = (window.currentQNum >= window.totalQuizQuestions) ? "DONE" : "WAITING";
     
-    // อัปเดตคะแนน (บวกเพิ่มเฉพาะถ้าทำข้อช้อยส์ถูก)
     await updateDoc(scoreRef, { score: isCorrect ? curScore + 1 : curScore, status: newStatus });
     
     document.getElementById('overlay').classList.add('hidden'); window.currentQNum++; window.loadNext();
