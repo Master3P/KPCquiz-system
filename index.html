@@ -58,8 +58,8 @@
     .btn-danger { background: var(--danger); color: white; }
     .btn-danger:hover { background: #b71c1c; }
     
-    input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dcdde1; margin-bottom: 15px; box-sizing: border-box; font-family: 'Prompt'; font-size: 15px; background: #fafbfc; transition: 0.3s; }
-    input:focus, select:focus { outline: none; border-color: var(--main); background: white; box-shadow: 0 0 0 2px rgba(59, 9, 100, 0.1); }
+    input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dcdde1; margin-bottom: 15px; box-sizing: border-box; font-family: 'Prompt'; font-size: 15px; background: #fafbfc; transition: 0.3s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--main); background: white; box-shadow: 0 0 0 2px rgba(59, 9, 100, 0.1); }
     .list-item { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
     
     .timer-bar { height: 10px; background: #e1e4e8; border-radius: 5px; overflow: hidden; margin-bottom: 20px; } 
@@ -75,6 +75,11 @@
 
     .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #7f8c8d; font-weight: 400; opacity: 0.9; }
     .developer-credit-white { text-align: center; margin-top: 30px; font-size: 13px; color: white; font-weight: 400; opacity: 0.9; }
+
+    /* ป้ายบอกประเภทข้อสอบ */
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; margin-bottom: 5px; }
+    .badge-choice { background-color: #e3f2fd; color: #1976d2; }
+    .badge-text { background-color: #f3e5f5; color: #7b1fa2; }
   </style>
 </head>
 <body>
@@ -138,8 +143,6 @@
           <button id="btnStatSTART" class="btn-outline" style="font-size:12px;" onclick="changeStatus('START')">เริ่มสอบ</button>
           <button id="btnStatEND" class="btn-outline" style="font-size:12px;" onclick="changeStatus('END')">ปิดระบบ</button>
         </div>
-        
-        <!-- 🟢 เพิ่มปุ่มดาวน์โหลดคะแนน Excel ตรงนี้ครับ -->
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
           <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()"><i class="fas fa-chart-pie"></i> ดูสถิติวิเคราะห์กราฟ</button>
           <button class="btn-main" style="background:#2ecc71; color:white;" onclick="exportToCSV()"><i class="fas fa-file-excel"></i> โหลดคะแนน (Excel)</button>
@@ -147,7 +150,7 @@
       </div>
 
       <div class="m-card" style="background: #fffcf5; border: 1px solid var(--secondary);">
-        <h4><i class="fas fa-robot" style="color: var(--secondary);"></i> AI Gemini สร้างข้อสอบ</h4>
+        <h4><i class="fas fa-robot" style="color: var(--secondary);"></i> AI Gemini สร้างข้อสอบ (แบบตัวเลือก)</h4>
         <input type="text" id="aiTopic" placeholder="ระบุหัวข้อสอบที่ต้องการ">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
           <input type="number" id="aiNumQ" placeholder="จำนวนข้อ" value="5" style="margin-bottom:0;">
@@ -161,10 +164,22 @@
       <div class="m-card">
         <h4 id="qFormTitle">เพิ่มข้อสอบด้วยตัวเอง</h4>
         <input type="hidden" id="editRowId">
+        
+        <!-- 🟢 เมนูสลับประเภทข้อสอบ ช้อยส์ / อัตนัย -->
+        <select id="qType" onchange="toggleQType()" style="font-weight: 600; color: var(--main); background: #fdfefe;">
+          <option value="CHOICE">🎯 แบบปรนัย (มีตัวเลือก A B C D)</option>
+          <option value="TEXT">✍️ แบบอัตนัย (พิมพ์ตอบแบบข้อเขียน)</option>
+        </select>
+
         <input type="text" id="qText" placeholder="โจทย์คำถาม">
-        <div id="dynamicOptionsContainer"></div>
-        <button class="btn-outline" style="padding:5px; font-size:12px; border-color:#ccc; color:#7f8c8d;" onclick="addOptionField()">+ เพิ่มตัวเลือกให้ข้อนี้</button>
-        <select id="qAns" style="margin-top:10px;"><option value="">-- ระบุเฉลย --</option></select>
+        
+        <!-- 🟢 โซนกำหนดช้อยส์ (ซ่อนได้ถ้าเลือกข้อเขียน) -->
+        <div id="choiceSetupArea">
+          <div id="dynamicOptionsContainer"></div>
+          <button class="btn-outline" style="padding:5px; font-size:12px; border-color:#ccc; color:#7f8c8d;" onclick="addOptionField()">+ เพิ่มตัวเลือกให้ข้อนี้</button>
+          <select id="qAns" style="margin-top:10px;"><option value="">-- ระบุเฉลย --</option></select>
+        </div>
+
         <div style="display:flex; gap:10px; margin-top:15px;">
           <input type="number" id="qMin" placeholder="นาที" value="0">
           <input type="number" id="qSec" placeholder="วินาที" value="30">
@@ -223,8 +238,9 @@
       <div class="m-card">
         <i class="fas fa-check-circle" style="font-size: 60px; color: #2ecc71; margin-bottom: 15px;"></i>
         <h2 style="margin-top: 0; color:var(--main);">ส่งคำตอบเรียบร้อย</h2>
-        <p style="font-size: 16px; color: #7f8c8d; margin-bottom: 5px;">คุณได้คะแนน</p>
+        <p style="font-size: 16px; color: #7f8c8d; margin-bottom: 5px;">คุณได้คะแนน (เฉพาะข้อช้อยส์)</p>
         <h1 id="finalScoreDisplay" style="font-size: 70px; color: var(--secondary); margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.1);">--/--</h1>
+        <small style="color: var(--main); display: block; margin-top: 10px;">* หากมีข้อเขียน อาจารย์จะดำเนินการตรวจให้คะแนนภายหลัง</small>
         <button class="btn-main" style="margin-top: 25px;" onclick="goHome()">กลับหน้าหลัก</button>
       </div>
     </div>
@@ -271,7 +287,7 @@
   window.timeTotal = 30;
   window.totalQuizQuestions = 0;
   window.cachedQuestions = [];
-  window.userSelectedChoice = 0;
+  window.userSelectedChoice = null; // Changed to support text
   window.timerInterval = null;
   window.isEditing = false;
   let adminUnsub = null;
@@ -382,8 +398,8 @@
       if(json.error) throw new Error(json.error.message);
       
       let rawText = json.candidates[0].content.parts[0].text;
-      
-      let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+      let cleanText = rawText.replace(/```json/g, "").replace(/
+```/g, "").trim();
       let aiResponse = JSON.parse(cleanText);
 
       let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
@@ -392,7 +408,8 @@
       const batch = writeBatch(db);
       aiResponse.forEach((item, index) => {
         let qRef = doc(collection(db, "questions"));
-        batch.set(qRef, { sessionID: window.currentSessionID, qNum: startQNum + index, question: item.question, options: item.options, ans: parseInt(item.ans), time: totalSeconds });
+        // AI จะสร้างเฉพาะข้อช้อยส์เป็นหลัก
+        batch.set(qRef, { sessionID: window.currentSessionID, qNum: startQNum + index, type: "CHOICE", question: item.question, options: item.options, ans: parseInt(item.ans), time: totalSeconds });
       });
       await batch.commit();
 
@@ -402,20 +419,14 @@
     document.getElementById('overlay').classList.add('hidden');
   };
 
-  // 🟢 ฟังก์ชันใหม่: ดึงข้อมูลคะแนนออกเป็น Excel (CSV)
   window.exportToCSV = async () => {
     document.getElementById('overlay').classList.remove('hidden');
     try {
       let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
-      if (scSnap.empty) {
-        alert("ยังไม่มีข้อมูลนักศึกษาในวิชานี้ครับ");
-        document.getElementById('overlay').classList.add('hidden');
-        return;
-      }
+      if (scSnap.empty) { alert("ยังไม่มีข้อมูลนักศึกษาในวิชานี้ครับ"); document.getElementById('overlay').classList.add('hidden'); return; }
 
-      // ใส่รหัสป้องกันภาษาไทยเพี้ยนใน Excel (BOM)
       let csvContent = "\uFEFF"; 
-      csvContent += "รหัสนักศึกษา,ชื่อ-นามสกุล,คะแนน,สถานะ\n";
+      csvContent += "รหัสนักศึกษา,ชื่อ-นามสกุล,คะแนน (เฉพาะช้อยส์),สถานะ\n";
 
       scSnap.forEach(doc => {
         let d = doc.data();
@@ -423,20 +434,14 @@
         csvContent += `"${d.studentID}","${d.studentName}","${d.score}","${statusText}"\n`;
       });
 
-      // สั่งเบราว์เซอร์ให้ดาวน์โหลดไฟล์
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       let sessionName = document.getElementById('manageSessionTitle').innerText;
       link.setAttribute("href", url);
       link.setAttribute("download", `คะแนนสอบ_${sessionName}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-    } catch(e) {
-      alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message);
-    }
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    } catch(e) { alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message); }
     document.getElementById('overlay').classList.add('hidden');
   };
 
@@ -450,11 +455,17 @@
     window.cachedQuestions.forEach(q => {
       let m = Math.floor(q.time / 60), s = q.time % 60;
       let timeText = (m > 0 ? m + " นาที " : "") + s + " วินาที";
-      let ansText = q.options[q.ans - 1] || "ไม่ระบุ";
+      
+      // 🟢 ตรวจสอบและแสดงประเภทข้อสอบ
+      let qType = q.type || "CHOICE"; 
+      let badgeHtml = qType === "TEXT" ? `<span class="badge badge-text"><i class="fas fa-pen"></i> อัตนัย (ข้อเขียน)</span>` : `<span class="badge badge-choice"><i class="fas fa-list"></i> ปรนัย (ตัวเลือก)</span>`;
+      let ansText = qType === "TEXT" ? "<span style='color:#7b1fa2;'>รออาจารย์ตรวจคำตอบด้วยตัวเอง</span>" : (q.options && q.options[q.ans - 1] ? q.options[q.ans - 1] : "ไม่ระบุ");
+
       h += `<div class="list-item" style="align-items:flex-start;">
               <span style="flex:1; padding-right:10px;">
+                ${badgeHtml}<br>
                 <b style="font-size:15px; color:var(--text);">${q.qNum}. ${q.question}</b><br>
-                <small style="color:#2ecc71; font-weight:600; display:inline-block; margin-top:5px;">✅ เฉลย: ${ansText} (ตัวเลือกที่ ${q.ans}) | ⏱️ ${timeText}</small>
+                <small style="color:#2ecc71; font-weight:600; display:inline-block; margin-top:5px;">✅ เฉลย: ${ansText} | ⏱️ ${timeText}</small>
               </span>
               <div style="white-space:nowrap; display:flex; gap:5px; margin-top:5px;">
                 <button onclick="prepareEdit('${q.id}')" style="color:var(--main); background:#f0f2f5; border:1px solid #dcdde1; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-edit"></i></button> 
@@ -463,6 +474,16 @@
             </div>`;
     });
     document.getElementById('existingQuestionsList').innerHTML = h;
+  };
+
+  // 🟢 ฟังก์ชันซ่อน/โชว์ ส่วนการตั้งค่าช้อยส์
+  window.toggleQType = () => {
+    let type = document.getElementById('qType').value;
+    if(type === 'TEXT') {
+      document.getElementById('choiceSetupArea').classList.add('hidden');
+    } else {
+      document.getElementById('choiceSetupArea').classList.remove('hidden');
+    }
   };
 
   window.addOptionField = (v="") => {
@@ -479,15 +500,27 @@
   window.prepareEdit = (id) => {
     let q = window.cachedQuestions.find(i => i.id == id);
     window.isEditing = true; document.getElementById('editRowId').value = id;
+    
+    // ตั้งค่าประเภทข้อสอบตอนกดแก้ไข
+    document.getElementById('qType').value = q.type || "CHOICE";
+    window.toggleQType();
+
     document.getElementById('qText').value = q.question; document.getElementById("dynamicOptionsContainer").innerHTML = "";
-    q.options.forEach(o => window.addOptionField(o)); document.getElementById('qAns').value = q.ans;
+    
+    if (q.type !== "TEXT" && q.options) {
+      q.options.forEach(o => window.addOptionField(o)); 
+      document.getElementById('qAns').value = q.ans;
+    }
+
     document.getElementById('qMin').value = Math.floor(q.time / 60); document.getElementById('qSec').value = q.time % 60;
     document.getElementById('qFormTitle').innerText = "แก้ไขข้อที่ " + q.qNum; document.getElementById('btnCancelEdit').classList.remove('hidden');
     window.scrollTo(0, document.getElementById('qFormTitle').offsetTop - 100);
   };
 
   window.resetQForm = () => {
-    window.isEditing = false; document.getElementById('qText').value = ""; document.getElementById("dynamicOptionsContainer").innerHTML = "";
+    window.isEditing = false; 
+    document.getElementById('qType').value = "CHOICE"; window.toggleQType();
+    document.getElementById('qText').value = ""; document.getElementById("dynamicOptionsContainer").innerHTML = "";
     [1,2,3,4].forEach(() => window.addOptionField());
     document.getElementById('qMin').value = 0; document.getElementById('qSec').value = 30;
     document.getElementById('qFormTitle').innerText = "เพิ่มข้อสอบด้วยตัวเอง"; document.getElementById('btnCancelEdit').classList.add('hidden');
@@ -495,14 +528,32 @@
 
   window.handleQuestionSubmit = async () => {
     document.getElementById('overlay').classList.remove('hidden');
-    let os = []; document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value));
+    
+    let qType = document.getElementById('qType').value;
+    let os = [];
+    let answerIndex = 0;
+
+    // ถ้าเป็นช้อยส์ ถึงจะดึงค่าจากกล่องช้อยส์
+    if (qType === "CHOICE") {
+      document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value));
+      answerIndex = parseInt(document.getElementById('qAns').value) || 0;
+    }
+
     let totalSec = (parseInt(document.getElementById('qMin').value) * 60) + parseInt(document.getElementById('qSec').value);
+    let payload = { 
+      sessionID: window.currentSessionID, 
+      type: qType,
+      question: document.getElementById('qText').value, 
+      options: os, 
+      ans: answerIndex, 
+      time: totalSec 
+    };
     
     if(window.isEditing) {
-      await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), { question: document.getElementById('qText').value, options: os, ans: parseInt(document.getElementById('qAns').value), time: totalSec });
+      await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), payload);
     } else {
-      let qNum = window.cachedQuestions.length + 1;
-      await addDoc(collection(db, "questions"), { sessionID: window.currentSessionID, qNum: qNum, question: document.getElementById('qText').value, options: os, ans: parseInt(document.getElementById('qAns').value), time: totalSec });
+      payload.qNum = window.cachedQuestions.length + 1;
+      await addDoc(collection(db, "questions"), payload);
     }
     document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); window.resetQForm();
   };
@@ -561,24 +612,41 @@
   };
 
   window.loadNext = async () => {
-    window.userSelectedChoice = 0; document.getElementById("optionsContainer").innerHTML = ""; document.getElementById("confirmBtn").classList.add("hidden");
+    window.userSelectedChoice = null; document.getElementById("optionsContainer").innerHTML = ""; document.getElementById("confirmBtn").classList.add("hidden");
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("qNum", "==", window.currentQNum)));
     if(qSnap.empty) {
+      // โหลดข้อสอบเสร็จสิ้น คำนวณคะแนนรวม
       showView('resultView'); document.getElementById('overlay').classList.remove('hidden');
       let scoreRef = await getDoc(doc(db, "scores", window.currentSessionID + "_" + window.myStudentID));
-      let tQ = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
-      document.getElementById("finalScoreDisplay").innerText = scoreRef.data().score + "/" + tQ.size;
+      let tQ = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("type", "==", "CHOICE"))); 
+      // โชว์คะแนนเทียบกับจำนวนข้อที่เป็นช้อยส์เท่านั้น
+      let totalChoiceQs = tQ.size;
+      document.getElementById("finalScoreDisplay").innerText = scoreRef.data().score + "/" + totalChoiceQs;
       document.getElementById('overlay').classList.add('hidden'); return;
     }
+    
     let qData = qSnap.docs[0].data(); window.totalQuizQuestions = (await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)))).size;
+    let qType = qData.type || "CHOICE";
+
     document.getElementById("qCounter").innerText = `ข้อที่ ${qData.qNum} / ${window.totalQuizQuestions}`;
     document.getElementById("studentIdDisplay").innerText = "ID: " + window.myStudentID;
     document.getElementById("questionText").innerText = qData.question;
-    qData.options.forEach((o, i) => {
-      let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = o;
-      b.onclick = () => { window.userSelectedChoice = i+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmBtn").classList.remove("hidden"); };
-      document.getElementById("optionsContainer").appendChild(b);
-    });
+    
+    // 🟢 สร้าง UI ตามประเภทข้อสอบ
+    if(qType === "TEXT") {
+      // โหมดข้อเขียน
+      window.userSelectedChoice = "TEXT_MODE_FLAG"; // Flag บอกว่าเป็นข้อเขียน
+      document.getElementById("optionsContainer").innerHTML = `<textarea id="essayAnswer" rows="5" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;"></textarea>`;
+      document.getElementById("confirmBtn").classList.remove("hidden"); // โชว์ปุ่มยืนยันทันที
+    } else {
+      // โหมดช้อยส์
+      qData.options.forEach((o, i) => {
+        let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = o;
+        b.onclick = () => { window.userSelectedChoice = i+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmBtn").classList.remove("hidden"); };
+        document.getElementById("optionsContainer").appendChild(b);
+      });
+    }
+
     window.timeTotal = qData.time; window.startTimer(qData.time);
   };
 
@@ -587,18 +655,45 @@
     window.timerInterval = setInterval(() => { s--; document.getElementById("timer").innerText = s; document.getElementById("timerFill").style.width = (s/window.timeTotal*100) + "%"; if(s <= 0) { clearInterval(window.timerInterval); window.submitAnswer(0); } }, 1000);
   };
 
-  window.confirmMyAnswer = () => { if(window.userSelectedChoice) { document.getElementById("confirmBtn").classList.add("hidden"); window.submitAnswer(window.userSelectedChoice); } };
+  window.confirmMyAnswer = () => { 
+    if(window.userSelectedChoice === "TEXT_MODE_FLAG") {
+      let essayAns = document.getElementById("essayAnswer").value.trim();
+      if(!essayAns) { alert("กรุณาพิมพ์คำตอบก่อนกดยืนยันครับ"); return; }
+      document.getElementById("confirmBtn").classList.add("hidden"); 
+      window.submitAnswer(essayAns);
+    } else if(window.userSelectedChoice) { 
+      document.getElementById("confirmBtn").classList.add("hidden"); 
+      window.submitAnswer(window.userSelectedChoice); 
+    } 
+  };
 
-  window.submitAnswer = async (choice) => {
+  window.submitAnswer = async (choiceOrText) => {
     clearInterval(window.timerInterval); document.getElementById('overlay').classList.remove('hidden');
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID), where("qNum", "==", window.currentQNum)));
-    let correctAns = qSnap.docs[0].data().ans; let isCorrect = (choice === correctAns && choice !== 0);
+    let qData = qSnap.docs[0].data();
+    let qType = qData.type || "CHOICE";
     
-    await addDoc(collection(db, "responses"), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: window.currentQNum, result: isCorrect ? "RIGHT" : "WRONG" });
+    let isCorrect = false;
+    let responsePayload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: window.currentQNum, type: qType };
+
+    if(qType === "TEXT") {
+      // เซฟคำตอบข้อเขียน
+      responsePayload.result = "MANUAL_CHECK";
+      responsePayload.textAnswer = choiceOrText; 
+    } else {
+      // ตรวจข้อช้อยส์
+      let correctAns = qData.ans; 
+      isCorrect = (choiceOrText === correctAns && choiceOrText !== 0);
+      responsePayload.result = isCorrect ? "RIGHT" : "WRONG";
+    }
+    
+    await addDoc(collection(db, "responses"), responsePayload);
     
     let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
     let sDoc = await getDoc(scoreRef); let curScore = sDoc.data().score;
     let newStatus = (window.currentQNum >= window.totalQuizQuestions) ? "DONE" : "WAITING";
+    
+    // อัปเดตคะแนน (บวกเพิ่มเฉพาะถ้าทำข้อช้อยส์ถูก)
     await updateDoc(scoreRef, { score: isCorrect ? curScore + 1 : curScore, status: newStatus });
     
     document.getElementById('overlay').classList.add('hidden'); window.currentQNum++; window.loadNext();
