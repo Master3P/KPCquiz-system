@@ -340,8 +340,13 @@
     <div id="studentLoginView" class="hidden">
       <div class="m-card">
         <h3 style="color:var(--main); margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; font-size: 16px;"><i class="fas fa-sign-in-alt"></i> ลงทะเบียนเข้าสอบ</h3>
+        
         <label style="font-weight:600; font-size:13px; color:#555;">เลือกรายวิชา:</label>
-        <select id="studentSessionSelect"><option value="">กำลังโหลดวิชา...</option></select>
+        <div style="display:flex; gap:8px;">
+          <select id="studentSessionSelect" style="margin-bottom:12px;"><option value="">กำลังโหลดวิชา...</option></select>
+          <button class="btn-outline" style="width:50px; border-color:var(--primary-blue); color:var(--primary-blue); margin-bottom:12px; padding:0; display:flex; align-items:center; justify-content:center;" onclick="window.loadActiveSessions()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
         <label style="font-weight:600; font-size:13px; color:#555;">รหัสนักศึกษา:</label>
         <input type="text" id="studentId" placeholder="กรอกรหัสประจำตัว">
         <label style="font-weight:600; font-size:13px; color:#555;">ชื่อ-นามสกุล:</label>
