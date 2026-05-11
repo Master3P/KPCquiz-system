@@ -3,664 +3,699 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ระบบแบบทดสอบออนไลน์ (Firebase Edition)</title>
+  <title>ระบบแบบทดสอบออนไลน์ (Masterpiece Edition)</title>
   
   <script>
-    window.onerror = function(message, source, lineno, colno, error) {
-      alert("พบข้อผิดพลาดในโค้ด (บรรทัดที่ " + lineno + "):\n" + message + "\n\nรบกวนแคปจอนี้ส่งให้ผมดูนะครับ!");
-      return false;
-    };
+    window.onerror = function(m, s, l) { alert("พบข้อผิดพลาด: " + m + " (บรรทัด " + l + ")"); return false; };
   </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  
   <style>
-    :root { 
-      --main: #3b0964;       
-      --accent: #11165e;     
-      --secondary: #ffb300;  
-      --danger: #d32f2f;     
-      --bg: #f0f2f5;         
-      --card: #ffffff;       
-      --text: #2c3e50;       
-    }
-    
+    :root { --main: #3b0964; --accent: #11165e; --secondary: #ffb300; --danger: #d32f2f; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --success: #2ecc71; }
     body { font-family: 'Prompt', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
     .hidden { display: none !important; }
     
+    /* UI Structure */
     #loginGateView { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--main), var(--accent)); padding: 20px; box-sizing: border-box; }
-    .logo-container { text-align: center; color: white; margin-bottom: 40px; } 
-    .logo-container i { font-size: 60px; margin-bottom: 10px; color: var(--secondary); text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .gate-card { background: var(--card); width: 100%; max-width: 350px; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; margin-bottom: 20px; cursor: pointer; transition: 0.3s; border-bottom: 5px solid var(--secondary); }
-    .gate-card:active { transform: scale(0.95); } 
-    .gate-card i { font-size: 35px; color: var(--main); margin-bottom: 10px; } 
-    .gate-card h3 { margin: 0; font-size: 18px; color: var(--main); }
+    .logo-container { text-align: center; color: white; margin-bottom: 30px; } 
+    .logo-container i { font-size: 50px; color: var(--secondary); margin-bottom: 10px; }
+    .gate-card { background: var(--card); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; margin-bottom: 15px; cursor: pointer; border-bottom: 5px solid var(--secondary); transition: 0.2s; }
+    .gate-card:active { transform: scale(0.98); }
     
-    .pin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 22, 94, 0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .pin-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-top: 5px solid var(--secondary); }
+    header { background: linear-gradient(90deg, var(--main), var(--accent)); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid var(--secondary); }
+    .container { padding: 15px; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
     
-    header { background: linear-gradient(90deg, var(--main), var(--accent)); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.15); border-bottom: 3px solid var(--secondary); }
-    header h2 { margin: 0; font-size: 18px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); } 
-    .nav-btn { background: none; border: none; color: white; font-size: 20px; padding: 5px; cursor: pointer; }
-    
-    .container { padding: 20px; max-width: 800px; margin: 0 auto; box-sizing: border-box; }
-    .m-card { background: var(--card); border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e1e4e8; }
-    
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-    .stat-mini { background: white; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #eee; border-left: 4px solid var(--main); box-shadow: 0 2px 8px rgba(0,0,0,0.02); } 
-    .stat-mini p { margin: 0; font-size: 12px; color: #7f8c8d; } 
-    .stat-mini b { font-size: 20px; color: var(--main); }
-    
-    .live-counter-card { background: #fffcf5; border: 2px solid var(--secondary); border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-    .counter-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); } 
-    .counter-row i { color: var(--main); margin-right: 10px; } 
-    .counter-num { font-size: 24px; font-weight: 600; color: var(--main); }
-    
-    button { padding: 12px; border-radius: 10px; border: none; font-weight: 600; font-family: 'Prompt'; font-size: 15px; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; }
-    .btn-main { background: var(--main); color: white; box-shadow: 0 4px 6px rgba(59, 9, 100, 0.2); } 
-    .btn-main:hover { background: var(--accent); }
-    .btn-outline { background: white; border: 2px solid var(--main); color: var(--main); } 
-    .btn-outline:hover { background: #f4f5f8; }
+    /* Category Cards (Admin) */
+    .admin-card { background: var(--card); border-radius: 15px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border-top: 4px solid var(--main); }
+    .admin-card h4 { margin-top: 0; color: var(--main); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; }
+    .card-settings { border-top-color: #3498db; }
+    .card-live { border-top-color: var(--success); }
+    .card-sync { border-top-color: var(--secondary); }
+    .card-questions { border-top-color: var(--main); }
+    .card-results { border-top-color: #95a5a6; }
+
+    /* Inputs & Buttons */
+    input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 12px; font-family: 'Prompt'; font-size: 14px; box-sizing: border-box; }
+    button { padding: 10px; border-radius: 8px; border: none; font-weight: 600; font-family: 'Prompt'; cursor: pointer; width: 100%; margin-bottom: 8px; transition: 0.2s; font-size: 14px; }
+    .btn-main { background: var(--main); color: white; }
+    .btn-outline { background: white; border: 2px solid var(--main); color: var(--main); }
     .btn-danger { background: var(--danger); color: white; }
-    .btn-danger:hover { background: #b71c1c; }
-    
-    input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dcdde1; margin-bottom: 15px; box-sizing: border-box; font-family: 'Prompt'; font-size: 15px; background: #fafbfc; transition: 0.3s; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--main); background: white; box-shadow: 0 0 0 2px rgba(59, 9, 100, 0.1); }
-    .list-item { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
-    
-    .timer-bar { height: 10px; background: #e1e4e8; border-radius: 5px; overflow: hidden; margin-bottom: 20px; } 
-    #strictTimerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; } 
-    .timer-text-strict { font-size: 35px; font-weight: 600; text-align: center; color: var(--danger); margin-bottom: 10px; font-family: monospace; }
-    
-    .timer-text-global { font-size: 28px; font-weight: 600; text-align: right; color: var(--danger); margin-bottom: 0; line-height: 1; font-family: monospace; }
-    
-    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 16px; width: 100%; display: block; color: var(--text); transition: 0.2s; } 
-    .opt-btn.selected { background: #fffcf5; border-color: var(--secondary); font-weight: 600; color: var(--main); box-shadow: 0 2px 8px rgba(255, 179, 0, 0.15); }
-    
-    .nav-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 2px solid #e1e4e8; background: white; cursor: pointer; font-weight: 600; transition: 0.2s; color: #7f8c8d; }
-    .nav-box:hover { border-color: var(--secondary); }
-    .nav-box.answered { background: #2ecc71; color: white; border-color: #2ecc71; }
-    .nav-box.current { border: 3px solid var(--main); box-shadow: 0 2px 8px rgba(59, 9, 100, 0.2); color: var(--main); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-mini { width: auto; padding: 5px 12px; font-size: 12px; margin: 0; }
 
-    #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(240, 242, 245, 0.9); z-index:5000; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; } 
+    /* List Items */
+    .list-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
+    
+    /* Quiz View */
+    .timer-text-global { font-size: 24px; font-weight: 600; color: var(--danger); font-family: monospace; }
+    .timer-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+    #strictTimerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; }
+    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 12px; border-radius: 10px; margin-bottom: 8px; width: 100%; color: var(--text); }
+    .opt-btn.selected { background: #fffcf5; border-color: var(--secondary); font-weight: 600; color: var(--main); }
+    .nav-box { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .nav-box.answered { background: var(--success); color: white; border-color: var(--success); }
+    .nav-box.current { border: 2px solid var(--main); color: var(--main); background: #eee; }
+
+    /* Overlay */
+    #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(240, 242, 245, 0.9); z-index:9000; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .developer-credit { text-align: center; padding: 15px; font-size: 13px; color: #7f8c8d; font-weight: 400; opacity: 0.9; }
-    .developer-credit-white { text-align: center; margin-top: 30px; font-size: 13px; color: white; font-weight: 400; opacity: 0.9; }
-
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; margin-bottom: 5px; }
-    .badge-choice { background-color: #e3f2fd; color: #1976d2; }
-    .badge-text { background-color: #f3e5f5; color: #7b1fa2; }
-    
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
   </style>
 </head>
 <body>
 
-  <div id="overlay" class="hidden"><div class="loader"></div><p style="margin-top:15px; font-weight:600; color: var(--text);">กำลังดำเนินการ...</p></div>
+  <div id="overlay" class="hidden"><div class="loader"></div><p style="margin-top:10px; font-weight:600;">กำลังดำเนินการ...</p></div>
 
   <div id="loginGateView">
-    <div class="logo-container">
-      <i class="fas fa-graduation-cap"></i>
-      <h1 style="margin-top: 0; margin-bottom: 5px;">แบบทดสอบออนไลน์</h1>
-    </div>
-    <div class="gate-card" onclick="selectRole('student')"><i class="fas fa-user-graduate"></i><h3>เข้าใช้งานสำหรับนักศึกษา</h3></div>
-    <div class="gate-card" onclick="showPinModal()"><i class="fas fa-user-tie"></i><h3>จัดการระบบสำหรับอาจารย์</h3></div>
-    <div class="developer-credit-white"><i class="fas fa-code"></i> Developed by <b>Kanpitcha</b></div>
+    <div class="logo-container"><i class="fas fa-graduation-cap"></i><h1>ระบบแบบทดสอบ</h1></div>
+    <div class="gate-card" onclick="showView('studentDashboardView')"><i class="fas fa-user-graduate"></i><h3>นักศึกษา</h3></div>
+    <div class="gate-card" onclick="showPinModal()"><i class="fas fa-user-tie"></i><h3>อาจารย์</h3></div>
   </div>
 
   <div id="pinModal" class="pin-modal hidden">
-    <div class="pin-box">
-      <i class="fas fa-lock" style="font-size: 30px; color: var(--main); margin-bottom: 15px;"></i><h4>ระบุรหัสผ่านอาจารย์</h4>
-      <input type="password" id="adminPinInput" placeholder="PIN 4 หลัก" maxlength="4" style="text-align:center; font-size: 20px;">
-      <button class="btn-main" onclick="verifyAdmin()">ตกลง</button>
+    <div class="pin-box" style="background: white; padding: 25px; border-radius: 15px; width: 280px; text-align: center; border-top: 5px solid var(--secondary); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4000; box-shadow: 0 0 20px rgba(0,0,0,0.2);">
+      <h4>รหัสผ่านอาจารย์</h4>
+      <input type="password" id="adminPinInput" placeholder="PIN 4 หลัก" maxlength="4" style="text-align:center;">
+      <button class="btn-main" onclick="verifyAdmin()">เข้าสู่ระบบ</button>
       <button class="btn-outline" onclick="closePinModal()">ยกเลิก</button>
     </div>
   </div>
 
   <header id="mainHeader" class="hidden">
-    <button class="nav-btn" onclick="goHome()"><i class="fas fa-home"></i></button>
-    <h2>แบบทดสอบออนไลน์</h2>
-    <button class="nav-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    <button style="width:auto; background:none; color:white;" onclick="goHome()"><i class="fas fa-home"></i></button>
+    <h2 id="headerTitle" style="font-size: 16px;">แบบทดสอบ</h2>
+    <button style="width:auto; background:none; color:white;" onclick="goHome()"><i class="fas fa-sign-out-alt"></i></button>
   </header>
 
   <div class="container hidden" id="appContainer">
     
     <div id="adminDashboardView" class="hidden">
-      <div class="stats-grid">
-        <div class="stat-mini"><p>วิชาทั้งหมด</p><b id="statSessions">0</b></div>
-        <div class="stat-mini"><p>ผู้เข้าสอบรวม</p><b id="statStudents">0</b></div>
+      <div class="stats-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+        <div class="stat-mini" style="background:white; padding:15px; border-radius:10px; text-align:center; border-left:4px solid var(--main);"><small>วิชาทั้งหมด</small><br><b id="statSessions" style="font-size:20px;">0</b></div>
+        <div class="stat-mini" style="background:white; padding:15px; border-radius:10px; text-align:center; border-left:4px solid var(--main);"><small>นักศึกษารวม</small><br><b id="statStudents" style="font-size:20px;">0</b></div>
       </div>
-      <button class="btn-main" onclick="showView('adminCreateView')">+ เพิ่มแบบทดสอบใหม่</button>
+      <button class="btn-main" onclick="showView('adminCreateView')">+ สร้างแบบทดสอบใหม่</button>
       <div id="sessionList"></div>
     </div>
 
     <div id="adminCreateView" class="hidden">
-      <div class="m-card">
-        <h4><i class="fas fa-plus-circle" style="color: var(--secondary);"></i> ชื่อแบบทดสอบ</h4>
-        <input type="text" id="newSessionName" placeholder="เช่น วิชาการจัดการ นศ.ป.โท">
-        <button class="btn-main" onclick="createSession()">ยืนยันสร้าง</button>
-        <button class="btn-outline" onclick="showView('adminDashboardView')">กลับ</button>
+      <div class="admin-card">
+        <h4><i class="fas fa-plus"></i> ข้อมูลวิชาใหม่</h4>
+        <input type="text" id="newSessionName" placeholder="ชื่อวิชา / เซคชั่น">
+        <button class="btn-main" onclick="createSession()">ยืนยันการสร้าง</button>
+        <button class="btn-outline" onclick="showView('adminDashboardView')">ย้อนกลับ</button>
       </div>
     </div>
 
     <div id="adminManageView" class="hidden">
-      <h3 id="manageSessionTitle" style="margin-top:0; text-align:center; color: var(--main);"></h3>
-      
-      <div class="m-card" style="background: #e8f4f8; border: 1px solid #bce0fd; padding: 15px;">
-        <h4 style="margin-top:0; color: #2980b9;"><i class="fas fa-cogs"></i> ตั้งค่ารูปแบบการสอบ (วิชานี้)</h4>
-        <select id="examModeSelect" onchange="toggleExamModeSetup()" style="font-weight:600; color:var(--accent); margin-bottom:10px;">
-          <option value="FREE">🏃 โหมดอิสระ (เหมาเวลารวม / ข้ามข้อได้)</option>
-          <option value="STRICT">⏳ โหมดบังคับ (จับเวลาทีละข้อ / ข้ามไม่ได้)</option>
+      <h3 id="manageSessionTitle" style="text-align:center; margin-top:0; color:var(--main);"></h3>
+
+      <div class="admin-card card-settings">
+        <h4><i class="fas fa-cog"></i> ตั้งค่ารูปแบบการสอบ</h4>
+        <label>รูปแบบการคุมเวลา:</label>
+        <select id="examModeSelect" onchange="toggleExamModeSetup()">
+          <option value="FREE">🏃 โหมดอิสระ (เหมารวม / ข้ามข้อได้)</option>
+          <option value="STRICT">⏳ โหมดบังคับ (ทีละข้อ / ย้อนไม่ได้)</option>
+          <option value="SYNC">🔔 โหมดข้อสอบกริ๊ง (ไปพร้อมกันทั้งห้อง)</option>
         </select>
         <div id="globalTimeSetup">
-          <label style="font-size:13px; color:#7f8c8d;">เวลาสอบรวมทั้งหมด (นาที)</label>
-          <input type="number" id="globalTimeInput" placeholder="เช่น 50, 60 หรือ 90" value="60">
+          <label>เวลาทำข้อสอบรวม (นาที):</label>
+          <input type="number" id="globalTimeInput" value="60">
         </div>
-        <button class="btn-main" style="background:#2980b9; margin-bottom:0;" onclick="saveSessionSettings()"><i class="fas fa-save"></i> บันทึกการตั้งค่ารูปแบบการสอบ</button>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <input type="checkbox" id="showScoreCheck" style="width:auto; margin:0;" checked> <label>แสดงคะแนนให้เด็กดูหลังส่งทันที</label>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <input type="checkbox" id="randomizeCheck" style="width:auto; margin:0;" checked> <label>สลับลำดับ ก ข ค ง อัตโนมัติ</label>
+        </div>
+        <button class="btn-main" style="background:#3498db;" onclick="saveSessionSettings()">บันทึกการตั้งค่าวิชา</button>
       </div>
 
-      <div class="live-counter-card">
-        <div class="counter-row"><span><i class="fas fa-users"></i> นักศึกษาในห้อง (Real-time)</span><span id="waitCountDisplay" class="counter-num">0</span></div>
-        <div class="counter-row"><span><i class="fas fa-check-circle" style="color:#2ecc71;"></i> ส่งข้อสอบแล้ว</span><span id="finishCountDisplay" class="counter-num">0</span></div>
-      </div>
-      
-      <div class="m-card">
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom:15px;">
-          <button id="btnStatWAITING" class="btn-outline" style="font-size:12px;" onclick="changeStatus('WAITING')">ห้องรอ</button>
-          <button id="btnStatSTART" class="btn-outline" style="font-size:12px;" onclick="changeStatus('START')">เริ่มสอบ</button>
-          <button id="btnStatEND" class="btn-outline" style="font-size:12px;" onclick="changeStatus('END')">ปิดระบบ</button>
+      <div class="admin-card card-live">
+        <h4><i class="fas fa-broadcast-tower"></i> แผงควบคุมห้องสอบ</h4>
+        <div class="live-counter-card" style="background: #fffcf5; border: 2px solid var(--secondary); border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="counter-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 10px;"><span>นักศึกษาในระบบ:</span><span id="waitCountDisplay" style="font-size: 24px; font-weight: 600; color: var(--main);">0</span></div>
+          <div class="counter-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: 10px;"><span>ส่งข้อสอบแล้ว:</span><span id="finishCountDisplay" style="font-size: 24px; font-weight: 600; color: var(--main);">0</span></div>
         </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:10px;">
+          <button id="btnStatWAITING" class="btn-outline" onclick="changeStatus('WAITING')">ห้องรอ</button>
+          <button id="btnStatSTART" class="btn-outline" onclick="changeStatus('START')">เริ่มสอบ</button>
+          <button id="btnStatEND" class="btn-outline" onclick="changeStatus('END')">ปิดห้อง</button>
+        </div>
+      </div>
+
+      <div id="syncRemoteArea" class="admin-card card-sync hidden">
+        <h4><i class="fas fa-bell"></i> รีโมทคุมข้อสอบกริ๊ง</h4>
+        <p style="font-size:12px; color:#666;">โหมดนี้เด็กจะเห็นโจทย์เฉพาะข้อที่อาจารย์ปล่อยเท่านั้น</p>
+        <div style="display:flex; align-items:center; gap:10px; justify-content:center; margin:15px 0;">
+          <button class="btn-outline btn-mini" onclick="syncControl(-1)"><i class="fas fa-step-backward"></i> ข้อก่อนหน้า</button>
+          <div style="text-align:center; min-width:80px;">
+            <small>ปล่อยโจทย์ข้อที่</small><br>
+            <b id="syncQNumDisplay" style="font-size:24px; color:var(--danger);">1</b>
+          </div>
+          <button class="btn-main btn-mini" onclick="syncControl(1)">ปล่อยข้อถัดไป <i class="fas fa-step-forward"></i></button>
+        </div>
+      </div>
+
+      <div class="admin-card card-questions">
+        <h4><i class="fas fa-file-invoice"></i> จัดการข้อสอบ</h4>
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 10px;">
-          <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()"><i class="fas fa-chart-pie"></i> ดูสถิติวิเคราะห์กราฟ</button>
-          <button class="btn-main" style="background:#2ecc71; color:white;" onclick="exportToCSV()"><i class="fas fa-file-excel"></i> โหลดคะแนน+ข้อเขียน</button>
+        <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:15px; border:1px dashed #ccc;">
+          <h5 style="margin:0 0 10px 0;">นำเข้าโจทย์รวดเดียว (ก๊อปวาง)</h5>
+          <textarea id="bulkInputArea" rows="5" placeholder="วางโจทย์ที่นี่ เช่น&#10;1. โจทย์ข้อหนึ่ง&#10;ก. ตัวเลือก1&#10;ข. ตัวเลือก2..."></textarea>
+          <button class="btn-success btn-mini" onclick="handleBulkImport()">ประมวลผลและเพิ่มข้อสอบ</button>
         </div>
-        <button class="btn-danger" style="margin-bottom: 15px;" onclick="resetSessionData()"><i class="fas fa-eraser"></i> ล้างข้อมูลคะแนน (เก็บข้อสอบไว้)</button>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <label>ค้นหาข้อ:</label>
+          <select id="qFilterSelect" onchange="renderQuestionList()" style="width:auto; margin:0;"></select>
+        </div>
+        <div id="existingQuestionsList" class="custom-scrollbar" style="max-height:250px; overflow-y:auto; margin-bottom:15px;"></div>
+
+        <div style="border-top:1px solid #eee; padding-top:10px;">
+          <h5 id="qFormTitle">เพิ่ม/แก้ไข ทีละข้อ</h5>
+          <input type="hidden" id="editRowId">
+          <select id="qType" onchange="toggleQType()"><option value="CHOICE">ปรนัย (ช้อยส์)</option><option value="TEXT">อัตนัย (ข้อเขียน)</option></select>
+          <input type="text" id="qText" placeholder="โจทย์คำถาม">
+          <div id="choiceSetupArea">
+            <div id="dynamicOptionsContainer"></div>
+            <button class="btn-outline btn-mini" onclick="addOptionField()">+ เพิ่มช้อยส์</button>
+            <select id="qAns" style="margin-top:10px; color:var(--success); font-weight:600;"></select>
+          </div>
+          <div style="display:flex; gap:5px;"><input type="number" id="qMin" placeholder="นาที" value="0"><input type="number" id="qSec" placeholder="วินาที" value="30"></div>
+          <button class="btn-main" onclick="handleQuestionSubmit()">บันทึกข้อมูลข้อนี้</button>
+          <button id="btnCancelEdit" class="btn-outline hidden" onclick="resetQForm()">ยกเลิกการแก้ไข</button>
+        </div>
       </div>
 
-      <div class="m-card" style="background: #fdfefe; border-top: 4px solid var(--main); padding-bottom: 10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h4 style="margin:0; color:var(--main);"><i class="fas fa-list-ol"></i> รายการข้อสอบ</h4>
-          <select id="qFilterSelect" onchange="renderQuestionList()" style="width: auto; max-width: 150px; margin-bottom:0; padding:8px; font-size:13px; font-weight:600; color:var(--main);">
-            <option value="ALL">ดูทั้งหมด</option>
-          </select>
+      <div class="admin-card card-results">
+        <h4><i class="fas fa-file-download"></i> รายงานและข้อมูล</h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+          <button class="btn-main" style="background:var(--secondary); color:var(--main);" onclick="loadAnalytics()">ดูสถิติวิเคราะห์กราฟ</button>
+          <button class="btn-main" style="background:#2ecc71;" onclick="exportToCSV()"><i class="fas fa-file-excel"></i> โหลด Excel (พร้อมเวลาส่ง)</button>
         </div>
-        
-        <div id="existingQuestionsList" class="custom-scrollbar" style="max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
-      </div>
-
-      <div class="m-card">
-        <h4 id="qFormTitle">เพิ่มข้อสอบด้วยตัวเอง</h4>
-        <input type="hidden" id="editRowId">
-        
-        <select id="qType" onchange="toggleQType()" style="font-weight: 600; color: var(--main); background: #fdfefe;">
-          <option value="CHOICE">🎯 แบบปรนัย (มีตัวเลือก A B C D)</option>
-          <option value="TEXT">✍️ แบบอัตนัย (พิมพ์ตอบแบบข้อเขียน)</option>
-        </select>
-
-        <input type="text" id="qText" placeholder="โจทย์คำถาม">
-        
-        <div id="choiceSetupArea">
-          <div id="dynamicOptionsContainer"></div>
-          <button class="btn-outline" style="padding:5px; font-size:12px; border-color:#ccc; color:#7f8c8d;" onclick="addOptionField()">+ เพิ่มตัวเลือกให้ข้อนี้</button>
-          <select id="qAns" style="margin-top:10px;"><option value="">-- ระบุเฉลย --</option></select>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:15px;">
-          <input type="number" id="qMin" placeholder="นาที (ใช้ในโหมดบังคับ)" value="0">
-          <input type="number" id="qSec" placeholder="วินาที" value="30">
-        </div>
-        <button class="btn-main" onclick="handleQuestionSubmit()">บันทึก และเริ่มพิมพ์ข้อต่อไป</button>
-        <button id="btnCancelEdit" class="btn-outline hidden" onclick="resetQForm()">ยกเลิก</button>
-      </div>
-      
-      <button class="btn-outline" onclick="goAdminHome()">กลับหน้าจัดการ</button>
-    </div>
-
-    <div id="analyticsView" class="hidden">
-      <div class="m-card">
-        <h3><i class="fas fa-chart-pie" style="color: var(--secondary);"></i> สถิติวิเคราะห์ผล</h3>
-        <div id="itemChart" style="height:300px;"></div>
-        <div id="scoreChart" style="height:300px;"></div>
-        <button class="btn-outline" onclick="showView('adminManageView')">กลับ</button>
+        <button class="btn-outline" onclick="duplicateSession()"><i class="fas fa-copy"></i> คัดลอกชุดข้อสอบนี้ (ไปห้องอื่น)</button>
+        <button class="btn-danger" style="margin-top:20px;" onclick="resetSessionData()">ล้างคะแนนเด็กทั้งหมด (ลบเฉพาะคำตอบ)</button>
+        <button class="btn-outline" style="margin-top:10px;" onclick="showView('adminDashboardView')">กลับหน้าหลัก</button>
       </div>
     </div>
 
     <div id="studentDashboardView" class="hidden">
-      <div class="m-card" style="text-align:center;">
-        <i class="fas fa-graduation-cap" style="font-size: 50px; color: var(--main);"></i>
-        <h2 style="color: var(--main);">ยินดีต้อนรับ</h2>
+      <div class="admin-card" style="text-align:center;">
+        <i class="fas fa-pen-nib" style="font-size:40px; color:var(--main);"></i>
+        <h3>ระบบสอบออนไลน์</h3>
+        <button class="btn-main" style="padding:20px;" onclick="showView('studentLoginView'); loadActiveSessions();">เข้าสู่ห้องสอบ</button>
+        <button class="btn-outline" onclick="showView('studentPortalView')">ตรวจสอบผลคะแนนเก่า</button>
+        <button class="btn-outline" style="margin-top:10px; border:none; color:#999;" onclick="goHome()">หน้าแรก</button>
       </div>
-      <button class="btn-main" style="padding:20px;" onclick="showView('studentLoginView'); loadActiveSessionsForStudent();">เข้าทำแบบทดสอบ</button>
-      <button class="btn-outline" style="padding:20px;" onclick="showView('studentPortalView')">ตรวจสอบผลคะแนนย้อนหลัง</button>
     </div>
 
     <div id="studentLoginView" class="hidden">
-      <div class="m-card">
-        <h3 style="color: var(--main);"><i class="fas fa-book"></i> เลือกแบบทดสอบ</h3>
-        <div style="display:flex; gap:10px;">
-          <select id="studentSessionSelect" style="margin:0;"><option value="">โหลดแบบทดสอบ...</option></select>
-          <button class="btn-outline" style="width:50px; border-color:var(--secondary); color:var(--secondary);" onclick="loadActiveSessionsForStudent()"><i class="fas fa-sync-alt"></i></button>
-        </div>
-        <input type="text" id="studentId" placeholder="รหัสนักศึกษา" style="margin-top:15px;">
+      <div class="admin-card">
+        <h4>เข้าสู่ห้องสอบ</h4>
+        <label>เลือกรายวิชา:</label>
+        <select id="studentSessionSelect"><option value="">กำลังโหลดวิชา...</option></select>
+        <input type="text" id="studentId" placeholder="รหัสนักศึกษา">
         <input type="text" id="studentName" placeholder="ชื่อ-นามสกุล">
-        <button class="btn-main" id="btnStudentJoin" onclick="studentJoinQuiz()">เข้าสู่ห้องสอบ</button>
+        <button class="btn-main" onclick="studentJoinQuiz()">เข้าร่วมสอบ</button>
       </div>
     </div>
 
     <div id="quizView" class="hidden">
-      <div class="m-card" style="padding: 15px; margin-bottom: 15px; border-bottom: 4px solid var(--secondary);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-          <div>
-            <span id="studentIdDisplay" style="font-size:13px; color: #7f8c8d; display:block;">ID: --</span>
-            <span id="qCounter" style="font-weight:600; color:var(--main); font-size:16px;">ข้อที่ -- / --</span>
-          </div>
-          
-          <div id="freeTimerArea" class="hidden">
-            <small style="color:var(--danger); font-weight:600; display:block; text-align:right;">เวลาเหลือรวม</small>
-            <div class="timer-text-global" id="globalTimer">--:--</div>
-          </div>
+      <div class="admin-card" style="padding:12px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="studentIdDisplay" style="font-size:12px; color:#666;">ID: --</span>
+          <div id="freeTimerArea" class="hidden"><small>เวลาที่เหลือ:</small> <span class="timer-text-global" id="globalTimer">00:00</span></div>
         </div>
-        
         <div id="strictTimerArea" class="hidden">
-          <div class="timer-text-strict" id="strictTimerText">--</div>
+          <div style="text-align:center; font-weight:600; font-size:22px; color:var(--danger);" id="strictTimerText">00</div>
           <div class="timer-bar"><div id="strictTimerFill"></div></div>
         </div>
-
-        <div id="qNavigator" class="hidden" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; padding: 5px 0;"></div>
+        <div id="qNavigator" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;" class="hidden"></div>
       </div>
 
-      <div class="m-card" style="min-height: 250px;">
-        <h3 id="questionText" style="color:var(--main); margin-top:0;"></h3>
-        <div id="optionsContainer"></div>
+      <div id="waitingSignalArea" class="admin-card hidden" style="text-align:center; padding:40px;">
+        <div class="loader"></div>
+        <h3 style="color:var(--main); margin-top:20px;">ส่งคำตอบแล้ว</h3>
+        <p>กรุณารออาจารย์ส่งสัญญาณปล่อยโจทย์ข้อถัดไป...</p>
       </div>
 
-      <div id="freeControls" class="hidden" style="display:flex; justify-content:space-between; gap: 10px;">
-        <button class="btn-outline" onclick="goPrevQ()"><i class="fas fa-chevron-left"></i> ย้อนกลับ</button>
-        <button class="btn-outline" onclick="goNextQ()">ถัดไป <i class="fas fa-chevron-right"></i></button>
+      <div id="questionContainerArea">
+        <div class="admin-card">
+          <span id="qCounter" style="font-size:12px; color:var(--main); font-weight:600;">ข้อที่ -- / --</span>
+          <h3 id="questionText" style="margin-top:10px;">กรุณารออาจารย์เริ่มสอบ...</h3>
+          <div id="optionsContainer"></div>
+        </div>
+        <div id="freeControls" class="hidden" style="display:flex; gap:10px;">
+          <button class="btn-outline" onclick="goPrevQ()">ย้อนกลับ</button>
+          <button class="btn-outline" onclick="goNextQ()">ข้อถัดไป</button>
+        </div>
+        <button id="confirmStrictBtn" class="btn-main hidden" onclick="confirmStrictAnswer()">ยืนยันคำตอบข้อนี้</button>
+        <button id="finalSubmitBtn" class="btn-danger hidden" style="margin-top:15px; padding:15px;" onclick="submitFinalExam()">ส่งข้อสอบทั้งหมด</button>
       </div>
-      <button id="finalSubmitBtn" class="btn-danger hidden" style="margin-top:20px; padding: 15px; border-radius: 15px;" onclick="submitFinalExam()"><i class="fas fa-paper-plane"></i> ส่งข้อสอบ (จบการทำแบบทดสอบ)</button>
-
-      <button id="confirmStrictBtn" class="btn-main hidden" onclick="confirmStrictAnswer()">ยืนยันคำตอบข้อนี้</button>
     </div>
 
     <div id="resultView" class="hidden" style="text-align:center;">
-      <div class="m-card">
-        <i class="fas fa-check-circle" style="font-size: 60px; color: #2ecc71; margin-bottom: 15px;"></i>
-        <h2 style="margin-top: 0; color:var(--main);">ส่งคำตอบเรียบร้อย</h2>
-        <p style="font-size: 16px; color: #7f8c8d; margin-bottom: 5px;">คุณได้คะแนน (เฉพาะข้อช้อยส์)</p>
-        <h1 id="finalScoreDisplay" style="font-size: 70px; color: var(--secondary); margin: 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.1);">--/--</h1>
-        <small style="color: var(--main); display: block; margin-top: 10px;">* หากมีข้อเขียน อาจารย์จะดำเนินการตรวจให้คะแนนภายหลัง</small>
-        <button class="btn-main" style="margin-top: 25px;" onclick="goHome()">กลับหน้าหลัก</button>
+      <div class="admin-card">
+        <i class="fas fa-check-circle" style="font-size:60px; color:var(--success);"></i>
+        <h2>ส่งข้อสอบเรียบร้อย</h2>
+        <div id="scoreDisplayArea">
+          <p>คะแนนที่ทำได้ (ปรนัย)</p>
+          <h1 id="finalScoreDisplay" style="font-size:50px; color:var(--secondary);">--/--</h1>
+        </div>
+        <div id="noScoreDisplayArea" class="hidden">
+          <p>ระบบได้บันทึกคำตอบของคุณแล้ว <br>รออาจารย์ประกาศคะแนนภายหลัง</p>
+        </div>
+        <button class="btn-main" style="margin-top:20px;" onclick="goHome()">กลับหน้าหลัก</button>
       </div>
     </div>
 
     <div id="studentPortalView" class="hidden">
-      <div class="m-card">
-        <h3 style="color:var(--main);"><i class="fas fa-search"></i> เช็คคะแนน</h3>
+      <div class="admin-card">
+        <h4>เช็คคะแนนย้อนหลัง</h4>
         <input type="text" id="portalId" placeholder="กรอกรหัสนักศึกษา">
-        <button class="btn-main" onclick="searchPortal()">ค้นหา</button>
-        <div id="portalResult" style="margin-top:20px;"></div>
+        <button class="btn-main" onclick="searchPortal()">ค้นหาข้อมูล</button>
+        <div id="portalResult" style="margin-top:15px;"></div>
         <button class="btn-outline" onclick="showView('studentDashboardView')">กลับ</button>
       </div>
     </div>
 
-    <div class="developer-credit"><i class="fas fa-code"></i> Developed by <b>Kanpitcha</b></div>
+    <div id="analyticsView" class="hidden">
+      <div class="admin-card">
+        <h4>วิเคราะห์ผลการสอบ</h4>
+        <div id="itemChart" style="height:250px;"></div>
+        <div id="scoreChart" style="height:250px;"></div>
+        <button class="btn-outline" onclick="showView('adminManageView')">กลับหน้าจัดการ</button>
+      </div>
+    </div>
   </div>
+
+  <div class="developer-credit" style="text-align:center; font-size:12px; color:#999; padding:20px;">Developed by <b>Kanpitcha</b></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC8lbyhvEplX48fvc5c8fK1eBXtUfuI1ac",
-    authDomain: "kpcquiz-system.firebaseapp.com",
-    projectId: "kpcquiz-system",
-    storageBucket: "kpcquiz-system.firebasestorage.app",
-    messagingSenderId: "405922995683",
-    appId: "1:405922995683:web:92ffb566d2ef390d2754d6",
-    measurementId: "G-NVP9PNLDEE"
-  };
+  const firebaseConfig = { apiKey: "AIzaSyC8lbyhvEplX48fvc5c8fK1eBXtUfuI1ac", authDomain: "kpcquiz-system.firebaseapp.com", projectId: "kpcquiz-system", storageBucket: "kpcquiz-system.firebasestorage.app", messagingSenderId: "405922995683", appId: "1:405922995683:web:92ffb566d2ef390d2754d6" };
+  const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.currentSessionID = "";
-  window.myStudentID = "";
-  window.isEditing = false;
-  let adminUnsub = null;
-  let studentUnsub = null;
-
-  window.allQuizQuestions = [];
-  window.currentQIndex = 0;
-  window.timerInterval = null;
-  window.myAnswers = {}; 
-  window.strictTimeTotal = 30;
-  window.userStrictChoice = null;
+  window.currentSessionID = ""; window.myStudentID = ""; window.allQuizQuestions = []; window.currentQIndex = 0; window.myAnswers = {}; window.timerInterval = null; window.isEditing = false;
+  let adminUnsub = null; let studentUnsub = null; let syncUnsub = null;
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
 
-  window.showView = (v) => { document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); document.getElementById(v).classList.remove('hidden'); window.scrollTo(0,0); };
-  window.goHome = () => { location.reload(); };
-  window.goAdminHome = () => { if(adminUnsub) adminUnsub(); showView('adminDashboardView'); loadDashboardStats(); };
-  window.selectRole = (role) => { if(role === 'student') { document.getElementById('loginGateView').classList.add('hidden'); document.getElementById('mainHeader').classList.remove('hidden'); document.getElementById('appContainer').classList.remove('hidden'); showView('studentDashboardView'); } };
-  window.showPinModal = () => { document.getElementById('pinModal').classList.remove('hidden'); };
-  window.closePinModal = () => { document.getElementById('pinModal').classList.add('hidden'); };
-  window.logout = () => { location.reload(); };
-
-  window.verifyAdmin = () => {
-    if(document.getElementById('adminPinInput').value === "1234") {
-      closePinModal(); document.getElementById('loginGateView').classList.add('hidden'); document.getElementById('mainHeader').classList.remove('hidden'); document.getElementById('appContainer').classList.remove('hidden'); showView('adminDashboardView'); loadDashboardStats();
-    } else alert("รหัสผ่านผิด");
+  // UI Handlers
+  window.showView = (v) => { 
+    document.querySelectorAll('.container > div, #loginGateView').forEach(d => d.classList.add('hidden')); 
+    document.getElementById(v).classList.remove('hidden'); 
+    if(v !== 'loginGateView') { document.getElementById('mainHeader').classList.remove('hidden'); document.getElementById('appContainer').classList.remove('hidden'); }
+    window.scrollTo(0,0);
   };
+  window.goHome = () => location.reload();
+  window.showPinModal = () => document.getElementById('pinModal').classList.remove('hidden');
+  window.closePinModal = () => document.getElementById('pinModal').classList.add('hidden');
+  window.verifyAdmin = () => { if(document.getElementById('adminPinInput').value === "1234") { closePinModal(); showView('adminDashboardView'); loadDashboardStats(); } else alert("PIN ผิด"); };
 
+  // Admin Dashboard Logic
   window.loadDashboardStats = async () => {
-    let sSnap = await getDocs(collection(db, "sessions"));
-    let scSnap = await getDocs(collection(db, "scores"));
-    document.getElementById('statSessions').innerText = sSnap.size;
-    document.getElementById('statStudents').innerText = scSnap.size;
-    loadAdminList();
-  };
-
-  const loadAdminList = async () => {
-    let sSnap = await getDocs(collection(db, "sessions"));
-    let ss = []; sSnap.forEach(d => pushData(ss, d));
-    ss.sort((a, b) => b.createdAt - a.createdAt); 
-    let h = "";
-    ss.forEach(s => {
-      let color = s.status === 'START' ? '#2ecc71' : (s.status === 'END' ? 'var(--danger)' : 'var(--secondary)');
-      h += `<div class="list-item">
-              <span><b style="color:var(--text);">${s.name}</b> <br><small style="color:${color}; font-weight:600;">${s.status}</small></span>
-              <div style="display:flex; gap:5px;">
-                <button class="btn-outline" style="width:auto; font-size:12px; padding:5px 10px; margin:0;" onclick="manageSession('${s.id}','${s.name}','${s.status}')">จัดการ</button>
-                <button class="btn-danger" style="width:auto; font-size:12px; padding:5px 10px; margin:0; border-radius:10px;" onclick="deleteSessionData('${s.id}')">ลบ</button>
-              </div>
-            </div>`;
+    const sSnap = await getDocs(collection(db, "sessions")); const scSnap = await getDocs(collection(db, "scores"));
+    document.getElementById('statSessions').innerText = sSnap.size; document.getElementById('statStudents').innerText = scSnap.size;
+    let ss = []; sSnap.forEach(d => ss.push({id:d.id, ...d.data()})); ss.sort((a,b)=>b.createdAt - a.createdAt);
+    let h = ""; ss.forEach(s => {
+      let color = s.status==='START'?'var(--success)':(s.status==='END'?'var(--danger)':'var(--secondary)');
+      h += `<div class="list-item"><span><b>${s.name}</b> <br><small style="color:${color}; font-weight:600;">${s.status}</small></span>
+            <div style="display:flex; gap:5px;"><button class="btn-main btn-mini" onclick="manageSession('${s.id}','${s.name}','${s.status}')">จัดการ</button><button class="btn-danger btn-mini" onclick="deleteSessionData('${s.id}')">ลบ</button></div></div>`;
     });
-    document.getElementById('sessionList').innerHTML = h || "ไม่มีข้อมูล";
+    document.getElementById('sessionList').innerHTML = h || "ไม่มีข้อมูลวิชา";
   };
-  function pushData(arr, doc) { arr.push({ id: doc.id, ...doc.data() }); }
 
   window.createSession = async () => {
-    let n = document.getElementById('newSessionName').value || "วิชาใหม่";
-    let docRef = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, createdAt: Date.now() });
-    window.manageSession(docRef.id, n, "WAITING");
-  };
-
-  window.deleteSessionData = async (id) => {
-    if(!confirm("ยืนยันการลบแบบทดสอบนี้ใช่หรือไม่?\n(ข้อมูลคำถามและคะแนนของนักศึกษาจะถูกลบทั้งหมด)")) return;
-    document.getElementById('overlay').classList.remove('hidden');
-    let qs = await getDocs(query(collection(db, "questions"), where("sessionID", "==", id))); qs.forEach(d => deleteDoc(d.ref));
-    let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", id))); sc.forEach(d => deleteDoc(d.ref));
-    let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", id))); rs.forEach(d => deleteDoc(d.ref));
-    await deleteDoc(doc(db, "sessions", id));
-    document.getElementById('overlay').classList.add('hidden');
-    loadDashboardStats();
-  };
-
-  window.resetSessionData = async () => {
-    if(!confirm("⚠️ ยืนยันการล้างข้อมูลคะแนนใช่หรือไม่?\n\n- คำตอบและคะแนนของนักศึกษาในวิชานี้จะถูกลบทั้งหมด (กลายเป็น 0)\n- ข้อสอบและการตั้งค่าจะยังอยู่เหมือนเดิม")) return;
-    document.getElementById('overlay').classList.remove('hidden');
-    try {
-      let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID))); sc.forEach(d => deleteDoc(d.ref));
-      let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID))); rs.forEach(d => deleteDoc(d.ref));
-      alert("ล้างข้อมูลคะแนนเรียบร้อยแล้วครับ!");
-    } catch(e) { alert("เกิดข้อผิดพลาดในการล้างข้อมูล: " + e.message); }
-    document.getElementById('overlay').classList.add('hidden');
+    let n = document.getElementById('newSessionName').value; if(!n) return;
+    let ref = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, showScore: true, randomize: true, syncQNum: 1, createdAt: Date.now() });
+    manageSession(ref.id, n, "WAITING");
   };
 
   window.manageSession = async (id, name, status) => {
     window.currentSessionID = id; document.getElementById('manageSessionTitle').innerText = name;
-    let sDoc = await getDoc(doc(db, "sessions", id)); let sData = sDoc.data() || {};
-    document.getElementById('examModeSelect').value = sData.examMode || "FREE"; document.getElementById('globalTimeInput').value = sData.globalTime || 60;
-    window.toggleExamModeSetup(); showView('adminManageView'); window.loadQuestions(); window.resetQForm(); window.updateStatusUI(status);
+    let sDoc = await getDoc(doc(db, "sessions", id)); let sData = sDoc.data();
+    document.getElementById('examModeSelect').value = sData.examMode || "FREE";
+    document.getElementById('globalTimeInput').value = sData.globalTime || 60;
+    document.getElementById('showScoreCheck').checked = sData.showScore !== false;
+    document.getElementById('randomizeCheck').checked = sData.randomize !== false;
+    document.getElementById('syncQNumDisplay').innerText = sData.syncQNum || 1;
+    toggleExamModeSetup(); showView('adminManageView'); loadQuestions(); updateStatusUI(status);
     
     if(adminUnsub) adminUnsub();
     adminUnsub = onSnapshot(query(collection(db, "scores"), where("sessionID", "==", id)), (snap) => {
-      let wait = 0, finish = 0; snap.forEach(d => { if(d.data().status === "DONE") finish++; else wait++; });
-      document.getElementById('waitCountDisplay').innerText = wait + finish; document.getElementById('finishCountDisplay').innerText = finish;
+      let wait = 0, done = 0; snap.forEach(d => { if(d.data().status==='DONE') done++; else wait++; });
+      document.getElementById('waitCountDisplay').innerText = wait + done; document.getElementById('finishCountDisplay').innerText = done;
     });
   };
 
-  window.toggleExamModeSetup = () => { let mode = document.getElementById('examModeSelect').value; if(mode === "FREE") document.getElementById('globalTimeSetup').classList.remove('hidden'); else document.getElementById('globalTimeSetup').classList.add('hidden'); };
-  window.saveSessionSettings = async () => { document.getElementById('overlay').classList.remove('hidden'); let mode = document.getElementById('examModeSelect').value; let time = parseInt(document.getElementById('globalTimeInput').value) || 60; await updateDoc(doc(db, "sessions", window.currentSessionID), { examMode: mode, globalTime: time }); document.getElementById('overlay').classList.add('hidden'); alert("บันทึกการตั้งค่ารูปแบบการสอบเรียบร้อยแล้วครับ!"); };
-  window.updateStatusUI = (st) => { document.querySelectorAll('[id^="btnStat"]').forEach(btn => { btn.style.background = "white"; btn.style.color = "var(--main)"; }); document.getElementById('btnStat'+st).style.background = "var(--main)"; document.getElementById('btnStat'+st).style.color = "white"; };
-  window.changeStatus = async (s) => { await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s }); window.updateStatusUI(s); };
-
-  window.exportToCSV = async () => {
-    document.getElementById('overlay').classList.remove('hidden');
-    try {
-      let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID))); let textQs = []; qSnap.forEach(d => { if (d.data().type === "TEXT") textQs.push(d.data().qNum); }); textQs.sort((a,b) => a - b);
-      let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID))); if (scSnap.empty) { alert("ยังไม่มีข้อมูลนักศึกษาในวิชานี้ครับ"); document.getElementById('overlay').classList.add('hidden'); return; }
-      let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID))); let responsesMap = {}; rSnap.forEach(r => { let d = r.data(); if (d.type === "TEXT") responsesMap[`${d.studentID}_${d.qNum}`] = d.textAnswer || ""; });
-
-      let csvContent = "\uFEFF"; csvContent += "รหัสนักศึกษา,ชื่อ-นามสกุล,คะแนน (เฉพาะช้อยส์),สถานะ"; textQs.forEach(qNum => { csvContent += `,คำตอบอัตนัย (ข้อ ${qNum})`; }); csvContent += "\n";
-
-      scSnap.forEach(doc => {
-        let d = doc.data(); let statusText = d.status === "DONE" ? "ส่งข้อสอบแล้ว" : "อยู่ในห้องสอบ"; let safeName = (d.studentName || "").replace(/"/g, '""');
-        csvContent += `"${d.studentID}","${safeName}","${d.score}","${statusText}"`;
-        textQs.forEach(qNum => { let ans = responsesMap[`${d.studentID}_${qNum}`] || ""; csvContent += `,"${ans.replace(/"/g, '""')}"`; }); csvContent += "\n";
-      });
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); let sessionName = document.getElementById('manageSessionTitle').innerText;
-      link.setAttribute("href", url); link.setAttribute("download", `คะแนนและคำตอบ_${sessionName}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    } catch(e) { alert("เกิดข้อผิดพลาดในการดาวน์โหลด: " + e.message); } document.getElementById('overlay').classList.add('hidden');
+  window.toggleExamModeSetup = () => {
+    let m = document.getElementById('examModeSelect').value;
+    document.getElementById('globalTimeSetup').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('syncRemoteArea').classList.toggle('hidden', m !== 'SYNC');
   };
 
+  window.saveSessionSettings = async () => {
+    await updateDoc(doc(db, "sessions", window.currentSessionID), { 
+      examMode: document.getElementById('examModeSelect').value, 
+      globalTime: parseInt(document.getElementById('globalTimeInput').value),
+      showScore: document.getElementById('showScoreCheck').checked,
+      randomize: document.getElementById('randomizeCheck').checked
+    }); alert("บันทึกการตั้งค่าสำเร็จ");
+  };
+
+  window.changeStatus = async (s) => { await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s }); updateStatusUI(s); };
+  window.updateStatusUI = (st) => { 
+    document.querySelectorAll('[id^="btnStat"]').forEach(b => { b.style.background="white"; b.style.color="var(--main)"; });
+    let active = document.getElementById('btnStat'+st); active.style.background="var(--main)"; active.style.color="white";
+  };
+
+  window.syncControl = async (dir) => {
+    let cur = parseInt(document.getElementById('syncQNumDisplay').innerText);
+    let next = Math.max(1, cur + dir);
+    document.getElementById('syncQNumDisplay').innerText = next;
+    await updateDoc(doc(db, "sessions", window.currentSessionID), { syncQNum: next });
+  };
+
+  // Question Management & Bulk Import
   window.loadQuestions = async () => {
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
-    let cachedQuestions = []; qSnap.forEach(d => cachedQuestions.push({ id: d.id, ...d.data() }));
-    cachedQuestions.sort((a,b) => a.qNum - b.qNum); window.allQuizQuestions = cachedQuestions; 
-
-    let filterSelect = document.getElementById('qFilterSelect');
-    let currentVal = filterSelect.value || "ALL";
-    filterSelect.innerHTML = '<option value="ALL">ดูทั้งหมด</option>';
-    cachedQuestions.forEach(q => { filterSelect.innerHTML += `<option value="${q.qNum}">ข้อที่ ${q.qNum}</option>`; });
-    if(cachedQuestions.find(q => q.qNum == currentVal)) { filterSelect.value = currentVal; } else { filterSelect.value = "ALL"; }
-    window.renderQuestionList();
+    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push({id:d.id, ...d.data()}));
+    window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
+    let fs = document.getElementById('qFilterSelect'); fs.innerHTML = '<option value="ALL">ดูทั้งหมด</option>';
+    window.allQuizQuestions.forEach(q => fs.innerHTML += `<option value="${q.qNum}">ข้อที่ ${q.qNum}</option>`);
+    renderQuestionList();
   };
 
   window.renderQuestionList = () => {
-    let filterVal = document.getElementById('qFilterSelect').value;
-    let listContainer = document.getElementById('existingQuestionsList');
-    let h = "";
-    
+    let f = document.getElementById('qFilterSelect').value; let h = "";
     window.allQuizQuestions.forEach(q => {
-      if (filterVal !== "ALL" && q.qNum != filterVal) return;
-      let m = Math.floor(q.time / 60), s = q.time % 60; let timeText = (m > 0 ? m + " นาที " : "") + s + " วินาที";
-      let qType = q.type || "CHOICE"; let badgeHtml = qType === "TEXT" ? `<span class="badge badge-text"><i class="fas fa-pen"></i> อัตนัย (ข้อเขียน)</span>` : `<span class="badge badge-choice"><i class="fas fa-list"></i> ปรนัย (ตัวเลือก)</span>`;
-      let ansText = qType === "TEXT" ? "<span style='color:#7b1fa2;'>ตรวจให้คะแนนเอง</span>" : (q.options && q.options[q.ans - 1] ? q.options[q.ans - 1] : "ไม่ระบุ");
-
-      h += `<div class="list-item" style="align-items:flex-start;">
-              <span style="flex:1; padding-right:10px;">${badgeHtml}<br><b style="font-size:15px; color:var(--text);">${q.qNum}. ${q.question}</b><br><small style="color:#2ecc71; font-weight:600; display:inline-block; margin-top:5px;">✅ เฉลย: ${ansText} | ⏱️ ${timeText}</small></span>
-              <div style="white-space:nowrap; display:flex; gap:5px; margin-top:5px;">
-                <button onclick="prepareEdit('${q.id}')" style="color:var(--main); background:#f0f2f5; border:1px solid #dcdde1; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-edit"></i></button> 
-                <button onclick="delQ('${q.id}')" style="color:var(--danger); background:#f0f2f5; border:1px solid #dcdde1; padding:8px; border-radius:8px; cursor:pointer;"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>`;
+      if(f !== 'ALL' && q.qNum != f) return;
+      let ansTxt = q.type==='TEXT'?'ข้อเขียน':(q.options[q.ans-1] || 'ยังไม่เฉลย');
+      let color = (q.type==='CHOICE' && q.ans === 0) ? 'color:red' : 'color:var(--success)';
+      h += `<div class="list-item"><span><b>${q.qNum}. ${q.question}</b><br><small style="${color}">เฉลย: ${ansTxt}</small></span>
+            <div style="display:flex; gap:5px;"><button class="btn-mini" onclick="prepareEdit('${q.id}')">แก้</button><button class="btn-mini btn-danger" onclick="delQ('${q.id}')">ลบ</button></div></div>`;
     });
-    listContainer.innerHTML = h || `<div style='text-align:center; padding:30px; color:#7f8c8d;'><i class="fas fa-box-open" style="font-size:30px; margin-bottom:10px;"></i><br>ไม่มีข้อมูลข้อสอบ</div>`;
+    document.getElementById('existingQuestionsList').innerHTML = h || "ยังไม่มีโจทย์";
   };
 
-  window.toggleQType = () => { let type = document.getElementById('qType').value; if(type === 'TEXT') document.getElementById('choiceSetupArea').classList.add('hidden'); else document.getElementById('choiceSetupArea').classList.remove('hidden'); };
-  window.addOptionField = (v="") => { let c = document.getElementById("dynamicOptionsContainer"); let d = document.createElement("div"); d.style="display:flex; gap:5px;"; d.innerHTML = `<input type="text" class="qOptInput" value="${v}"><button type="button" class="btn-danger" style="width:50px; border-radius:10px; margin-bottom:15px;" onclick="this.parentElement.remove(); window.updateAnswerDropdown();"><i class="fas fa-times"></i></button>`; c.appendChild(d); window.updateAnswerDropdown(); };
-  window.updateAnswerDropdown = () => { let s = document.getElementById("qAns"), count = document.querySelectorAll(".qOptInput").length; s.innerHTML = '<option value="">-- ระบุเฉลย --</option>'; for(let i=1; i<=count; i++) s.innerHTML += `<option value="${i}">ตัวเลือกที่ ${i}</option>`; };
-
-  window.prepareEdit = (id) => {
-    let q = window.allQuizQuestions.find(i => i.id == id); window.isEditing = true; document.getElementById('editRowId').value = id;
-    document.getElementById('qType').value = q.type || "CHOICE"; window.toggleQType();
-    document.getElementById('qText').value = q.question; document.getElementById("dynamicOptionsContainer").innerHTML = "";
-    if (q.type !== "TEXT" && q.options) { q.options.forEach(o => window.addOptionField(o)); document.getElementById('qAns').value = q.ans; }
-    document.getElementById('qMin').value = Math.floor(q.time / 60); document.getElementById('qSec').value = q.time % 60;
-    document.getElementById('qFormTitle').innerText = "แก้ไขข้อที่ " + q.qNum; document.getElementById('btnCancelEdit').classList.remove('hidden'); window.scrollTo(0, document.getElementById('qFormTitle').offsetTop - 100);
+  // 🟢 Updated Bulk Import with No Option Limit
+  window.handleBulkImport = async () => {
+    let text = document.getElementById('bulkInputArea').value; if(!text.trim()) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    let blocks = text.split(/\n(?=\d+[\.\)])/).filter(b => b.trim());
+    const batch = writeBatch(db);
+    let startNum = window.allQuizQuestions.length + 1;
+    blocks.forEach((block, idx) => {
+        let lines = block.split('\n').map(l => l.trim()).filter(l => l);
+        let qText = lines[0].replace(/^\d+[\.\)]\s*/, '');
+        let options = [];
+        lines.slice(1).forEach(line => {
+            if(line.match(/^[ก-ฮa-zA-Z][\.\)]/)) {
+                options.push(line.replace(/^[ก-ฮa-zA-Z][\.\)]\s*/, ''));
+            }
+        });
+        while(options.length < 2) options.push(""); // Prevent empty array issues
+        let qRef = doc(collection(db, "questions"));
+        batch.set(qRef, { sessionID: window.currentSessionID, qNum: startNum + idx, type: "CHOICE", question: qText, options: options, ans: 0, time: 30 });
+    });
+    await batch.commit();
+    document.getElementById('bulkInputArea').value = "";
+    document.getElementById('overlay').classList.add('hidden');
+    alert("นำเข้าข้อสอบเรียบร้อยแล้ว กรุณาเลือกเฉลยให้แต่ละข้อด้วยนะครับ");
+    loadQuestions();
   };
 
-  window.resetQForm = () => {
-    window.isEditing = false; document.getElementById('qType').value = "CHOICE"; window.toggleQType(); document.getElementById('qText').value = ""; document.getElementById("dynamicOptionsContainer").innerHTML = "";
-    [1,2,3,4].forEach(() => window.addOptionField()); document.getElementById('qMin').value = 0; document.getElementById('qSec').value = 30;
-    document.getElementById('qFormTitle').innerText = "เพิ่มข้อสอบด้วยตัวเอง"; document.getElementById('btnCancelEdit').classList.add('hidden');
+  window.addOptionField = (v="") => {
+    let d = document.createElement("div"); d.style="display:flex; gap:5px; margin-bottom:5px;";
+    d.innerHTML = `<input type="text" class="qOptInput" value="${v}" style="margin:0;"><button class="btn-danger btn-mini" style="width:40px;" onclick="this.parentElement.remove(); updateAnsDrop();">X</button>`;
+    document.getElementById("dynamicOptionsContainer").appendChild(d); updateAnsDrop();
+  };
+  window.updateAnsDrop = () => {
+    let s = document.getElementById("qAns"); s.innerHTML = '<option value="0">-- เลือกข้อที่ถูก --</option>';
+    document.querySelectorAll(".qOptInput").forEach((_,i) => s.innerHTML += `<option value="${i+1}">ตัวเลือกที่ ${i+1}</option>`);
   };
 
   window.handleQuestionSubmit = async () => {
+    let type = document.getElementById('qType').value; let os = []; document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value));
+    let data = { sessionID: window.currentSessionID, type, question: document.getElementById('qText').value, options: os, ans: parseInt(document.getElementById('qAns').value)||0, time: (parseInt(document.getElementById('qMin').value)*60)+parseInt(document.getElementById('qSec').value) };
     document.getElementById('overlay').classList.remove('hidden');
-    let qType = document.getElementById('qType').value; let os = []; let answerIndex = 0;
-    if (qType === "CHOICE") { document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value)); answerIndex = parseInt(document.getElementById('qAns').value) || 0; }
-    let totalSec = (parseInt(document.getElementById('qMin').value) * 60) + parseInt(document.getElementById('qSec').value);
-    let payload = { sessionID: window.currentSessionID, type: qType, question: document.getElementById('qText').value, options: os, ans: answerIndex, time: totalSec };
-    
-    if(window.isEditing) await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), payload);
-    else { payload.qNum = window.allQuizQuestions.length + 1; await addDoc(collection(db, "questions"), payload); }
-    document.getElementById('qFilterSelect').value = "ALL"; document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); window.resetQForm();
+    if(window.isEditing) await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), data);
+    else { data.qNum = window.allQuizQuestions.length + 1; await addDoc(collection(db, "questions"), data); }
+    window.isEditing = false; document.getElementById('overlay').classList.add('hidden'); loadQuestions(); resetQForm();
   };
 
-  window.delQ = async (id) => { 
-    if(confirm("ยืนยันลบข้อนี้?")) { document.getElementById('overlay').classList.remove('hidden'); await deleteDoc(doc(db, "questions", id)); document.getElementById('qFilterSelect').value = "ALL"; document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); } 
+  window.prepareEdit = (id) => {
+    let q = window.allQuizQuestions.find(i => i.id == id); window.isEditing = true;
+    document.getElementById('editRowId').value = id; document.getElementById('qType').value = q.type;
+    document.getElementById('qText').value = q.question; document.getElementById('dynamicOptionsContainer').innerHTML = "";
+    q.options.forEach(o => addOptionField(o)); document.getElementById('qAns').value = q.ans;
+    document.getElementById('qMin').value = Math.floor(q.time/60); document.getElementById('qSec').value = q.time%60;
+    document.getElementById('btnCancelEdit').classList.remove('hidden'); window.scrollTo(0, document.getElementById('qFormTitle').offsetTop - 100);
+  };
+  window.resetQForm = () => { 
+    window.isEditing = false; document.getElementById('qText').value=""; document.getElementById('dynamicOptionsContainer').innerHTML=""; 
+    [1,2,3,4].forEach(()=>addOptionField()); document.getElementById('btnCancelEdit').classList.add('hidden'); 
   };
 
-  window.loadAnalytics = async () => {
-    showView('analyticsView'); document.getElementById('overlay').classList.remove('hidden');
-    let itemAnalysis = {}; let scoresList = []; let totalQs = window.allQuizQuestions.length; window.allQuizQuestions.forEach(q => itemAnalysis[q.qNum] = 0);
-    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID))); rSnap.forEach(r => { let d = r.data(); if(d.result === "WRONG") itemAnalysis[d.qNum] = (itemAnalysis[d.qNum] || 0) + 1; });
-    let sSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID), where("status", "==", "DONE"))); sSnap.forEach(s => scoresList.push(s.data().score)); document.getElementById('overlay').classList.add('hidden');
-    let d1 = [['ข้อที่', 'ตอบผิด']]; for(let q in itemAnalysis) d1.push(["ข้อ "+q, itemAnalysis[q]]); new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์คนตอบผิด', colors: ['#3b0964']});
-    let freq = {}; for(let i=0; i<=totalQs; i++) freq[i] = 0; scoresList.forEach(s => freq[s]++); let d2 = [['คะแนน', 'คน']]; for(let s in freq) d2.push([s+" คะแนน", freq[s]]); new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'การกระจายของคะแนน', colors: ['#ffb300']});
+  window.duplicateSession = async () => {
+    if(!confirm("ยืนยันการคัดลอกวิชานี้?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    let sDoc = await getDoc(doc(db, "sessions", window.currentSessionID));
+    let newData = {...sDoc.data(), name: sDoc.data().name + " (Copy)", createdAt: Date.now(), status: "WAITING"};
+    let newRef = await addDoc(collection(db, "sessions"), newData);
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    const batch = writeBatch(db);
+    qSnap.forEach(q => { let qRef = doc(collection(db, "questions")); batch.set(qRef, {...q.data(), sessionID: newRef.id}); });
+    await batch.commit(); document.getElementById('overlay').classList.add('hidden'); alert("โคลนวิชาเรียบร้อยครับ"); loadDashboardStats();
   };
 
-  window.loadActiveSessionsForStudent = async () => {
-    let sSnap = await getDocs(collection(db, "sessions")); let s = document.getElementById('studentSessionSelect'); s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
-    sSnap.forEach(d => { if(d.data().status !== 'END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
+  // Student Engine (Sync & Anti-Cheating)
+  let tabSwitchCount = 0;
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === 'hidden' && window.myStudentID && window.currentSessionID) {
+      tabSwitchCount++;
+      await updateDoc(doc(db, "scores", window.currentSessionID + "_" + window.myStudentID), { tabSwitches: tabSwitchCount });
+    }
+  });
+
+  window.loadActiveSessions = async () => {
+    let snap = await getDocs(collection(db, "sessions")); let s = document.getElementById('studentSessionSelect'); s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
+    snap.forEach(d => { if(d.data().status !== 'END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
   };
 
   window.studentJoinQuiz = async () => {
-    window.currentSessionID = document.getElementById('studentSessionSelect').value; window.myStudentID = document.getElementById('studentId').value;
-    if(!window.currentSessionID || !window.myStudentID) { alert("กรุณาเลือกวิชาและกรอกรหัส!"); return; }
-
+    window.currentSessionID = document.getElementById('studentSessionSelect').value;
+    window.myStudentID = document.getElementById('studentId').value;
+    if(!window.currentSessionID || !window.myStudentID) return alert("กรุณากรอกข้อมูล");
+    
     document.getElementById('overlay').classList.remove('hidden');
     let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID); let sDoc = await getDoc(scoreRef);
-    if(sDoc.exists() && sDoc.data().status === "DONE") { alert("คุณได้ส่งข้อสอบนี้ไปแล้ว!"); document.getElementById('overlay').classList.add('hidden'); return; }
-    if(!sDoc.exists()) await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING" });
+    if(sDoc.exists() && sDoc.data().status === "DONE") { document.getElementById('overlay').classList.add('hidden'); return alert("คุณส่งข้อสอบนี้ไปแล้ว"); }
+
+    window.myAnswers = {};
+    if(sDoc.exists()) {
+      let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID), where("studentID", "==", window.myStudentID)));
+      rSnap.forEach(r => { let d = r.data(); window.myAnswers[d.qNum] = d.type === "TEXT" ? d.textAnswer : d.ans; });
+      let localDraft = localStorage.getItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`);
+      if(localDraft) window.myAnswers = { ...window.myAnswers, ...JSON.parse(localDraft) };
+    } else {
+      await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING", tabSwitches: 0, startedAt: serverTimestamp() });
+    }
     document.getElementById('overlay').classList.add('hidden');
-    showView('quizView'); document.getElementById("questionText").innerText = "ลงทะเบียนสำเร็จ รออาจารย์กดเริ่มสอบ..."; document.getElementById("qNavigator").innerHTML = "";
+    showView('quizView');
 
     if(studentUnsub) studentUnsub();
-    studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (docSnap) => { if(docSnap.data().status === "START") { studentUnsub(); window.startExamRouter(docSnap.data()); } });
+    studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => { 
+      let sd = snap.data();
+      if(sd.status==='START') startExam(sd); 
+      else if(sd.status==='END') goHome();
+    });
   };
 
-  window.startExamRouter = async (sessionData) => {
-    document.getElementById('overlay').classList.remove('hidden');
+  window.startExam = async (sData) => {
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
-    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push(d.data())); window.allQuizQuestions.sort((a,b) => a.qNum - b.qNum);
-    if(window.allQuizQuestions.length === 0) { alert("ยังไม่มีข้อสอบในระบบ"); document.getElementById('overlay').classList.add('hidden'); return; }
-
-    window.currentQIndex = 0; document.getElementById("studentIdDisplay").innerText = "รหัสนักศึกษา: " + window.myStudentID; document.getElementById('overlay').classList.add('hidden');
-
-    let mode = sessionData.examMode || "FREE";
-    if(mode === "FREE") { let globalMins = sessionData.globalTime || 60; window.startFreeMode(globalMins * 60); } else { window.startStrictMode(); }
+    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push(d.data()));
+    window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
+    
+    if(sData.examMode === "SYNC") {
+      if(syncUnsub) syncUnsub();
+      syncUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => {
+        let qIdx = (snap.data().syncQNum || 1) - 1;
+        if(qIdx !== window.currentQIndex || !window.hasStartedSync) {
+          window.currentQIndex = qIdx; window.hasStartedSync = true;
+          document.getElementById('waitingSignalArea').classList.add('hidden');
+          document.getElementById('questionContainerArea').classList.remove('hidden');
+          renderQuiz(sData);
+        }
+      });
+    } else {
+      if(sData.examMode === "FREE") startFreeTimer(sData.globalTime * 60); else startStrictTimer();
+      renderQuiz(sData);
+    }
   };
 
-  window.startFreeMode = (totalSeconds) => {
-    document.getElementById('freeTimerArea').classList.remove('hidden'); document.getElementById('qNavigator').classList.remove('hidden'); document.getElementById('freeControls').classList.remove('hidden'); document.getElementById('finalSubmitBtn').classList.remove('hidden');
-    document.getElementById('strictTimerArea').classList.add('hidden'); document.getElementById('confirmStrictBtn').classList.add('hidden');
-    window.myAnswers = {}; window.startGlobalTimer(totalSeconds); window.renderFreeQuestion();
+  window.renderQuiz = (sData) => {
+    let q = window.allQuizQuestions[window.currentQIndex]; if(!q) return;
+    document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`;
+    document.getElementById("questionText").innerText = q.question;
+    let box = document.getElementById("optionsContainer"); box.innerHTML = "";
+    
+    if(q.type==='TEXT') {
+      box.innerHTML = `<textarea id="essayAns" rows="6" oninput="saveAns(this.value)">${window.myAnswers[q.qNum]||''}</textarea>`;
+    } else {
+      // Logic สลับช้อยส์ แบบไม่จำกัดจำนวน
+      let indices = q.options.map((_, i) => i);
+      if(sData.randomize !== false) indices.sort(() => Math.random() - 0.5);
+      indices.forEach(idx => {
+        if(!q.options[idx]) return;
+        let b = document.createElement("button"); b.className = `opt-btn ${window.myAnswers[q.qNum]===idx+1?'selected':''}`;
+        b.innerText = q.options[idx]; b.onclick = () => { window.userStrictChoice = idx+1; saveAns(idx+1); renderQuiz(sData); };
+        box.appendChild(b);
+      });
+    }
+
+    let m = sData.examMode;
+    document.getElementById('qNavigator').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('freeControls').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('finalSubmitBtn').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('confirmStrictBtn').classList.toggle('hidden', m === 'FREE');
+    if(m === 'FREE') renderNav();
+    if(m === 'STRICT' || m === 'SYNC') startInternalTimer(q.time, m);
   };
 
-  window.startGlobalTimer = (totalSeconds) => {
-    clearInterval(window.timerInterval);
-    let updateTimeDisplay = (s) => { let m = Math.floor(s/60); let rs = s%60; document.getElementById("globalTimer").innerText = `${m.toString().padStart(2,'0')}:${rs.toString().padStart(2,'0')}`; };
-    updateTimeDisplay(totalSeconds);
-    window.timerInterval = setInterval(() => { totalSeconds--; updateTimeDisplay(totalSeconds); if(totalSeconds <= 0) { clearInterval(window.timerInterval); alert("หมดเวลาทำแบบทดสอบ! ระบบกำลังส่งคำตอบอัตโนมัติ..."); window.submitFinalExam(); } }, 1000);
+  window.saveAns = (a) => {
+    let qNum = window.allQuizQuestions[window.currentQIndex].qNum; window.myAnswers[qNum] = a;
+    localStorage.setItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`, JSON.stringify(window.myAnswers));
+    if(document.getElementById('examModeSelect').value === 'FREE') renderNav();
   };
 
-  window.renderFreeQuestion = () => {
-    let q = window.allQuizQuestions[window.currentQIndex]; document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`; document.getElementById("questionText").innerText = `${q.qNum}. ${q.question}`;
-    let optsContainer = document.getElementById("optionsContainer"); optsContainer.innerHTML = ""; let savedAnswer = window.myAnswers[q.qNum]; 
-    if(q.type === "TEXT") { optsContainer.innerHTML = `<textarea id="essayAnswer" rows="6" oninput="window.saveTempAnswer(this.value)" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;">${savedAnswer || ""}</textarea>`; } 
-    else { q.options.forEach((opt, idx) => { let b = document.createElement("button"); b.className = "opt-btn"; if(savedAnswer === idx+1) b.classList.add("selected"); b.innerText = opt; b.onclick = () => { document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); window.saveTempAnswer(idx+1); }; optsContainer.appendChild(b); }); }
-    window.renderNavigator();
-  };
-
-  window.saveTempAnswer = (ans) => { window.myAnswers[window.allQuizQuestions[window.currentQIndex].qNum] = ans; window.renderNavigator(); };
-  window.renderNavigator = () => {
-    let nav = document.getElementById("qNavigator"); nav.innerHTML = "";
-    window.allQuizQuestions.forEach((q, idx) => {
-        let box = document.createElement("div"); box.className = "nav-box"; box.innerText = q.qNum;
-        if(idx === window.currentQIndex) box.classList.add("current"); if(window.myAnswers[q.qNum] !== undefined && window.myAnswers[q.qNum] !== "") box.classList.add("answered"); 
-        box.onclick = () => { window.currentQIndex = idx; window.renderFreeQuestion(); }; nav.appendChild(box);
-    });
-  };
-
-  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderFreeQuestion(); } };
-  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length - 1) { window.currentQIndex++; window.renderFreeQuestion(); } };
-
-  window.submitFinalExam = async () => {
-    if(document.getElementById("globalTimer").innerText !== "00:00") { if(!confirm("คุณต้องการส่งข้อสอบใช่หรือไม่?\n(ตรวจทานคำตอบให้เรียบร้อยก่อนกดยืนยัน)")) return; }
-    clearInterval(window.timerInterval); document.getElementById('overlay').classList.remove('hidden');
-    let totalScore = 0; const batch = writeBatch(db); 
-    window.allQuizQuestions.forEach(q => {
-        let ans = window.myAnswers[q.qNum]; let isCorrect = false; let payload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type || "CHOICE" };
-        if(q.type === "TEXT") { payload.result = "MANUAL_CHECK"; payload.textAnswer = ans || ""; } 
-        else { isCorrect = (ans === q.ans && ans !== undefined); payload.result = isCorrect ? "RIGHT" : "WRONG"; if(isCorrect) totalScore++; }
-        let responseRef = doc(collection(db, "responses")); batch.set(responseRef, payload);
-    });
-    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID); batch.update(scoreRef, { score: totalScore, status: "DONE" }); await batch.commit();
-    document.getElementById('overlay').classList.add('hidden'); let totalChoiceQs = window.allQuizQuestions.filter(q => q.type !== "TEXT").length; document.getElementById("finalScoreDisplay").innerText = totalScore + "/" + totalChoiceQs; showView('resultView');
-  };
-
-  window.startStrictMode = () => {
-    document.getElementById('strictTimerArea').classList.remove('hidden'); document.getElementById('freeTimerArea').classList.add('hidden'); document.getElementById('qNavigator').classList.add('hidden'); document.getElementById('freeControls').classList.add('hidden'); document.getElementById('finalSubmitBtn').classList.add('hidden');
-    window.renderStrictQuestion();
-  };
-
-  window.renderStrictQuestion = () => {
-    window.userStrictChoice = null; document.getElementById("confirmStrictBtn").classList.add("hidden");
-    let q = window.allQuizQuestions[window.currentQIndex]; document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`; document.getElementById("questionText").innerText = `${q.qNum}. ${q.question}`;
-    let optsContainer = document.getElementById("optionsContainer"); optsContainer.innerHTML = "";
-    if(q.type === "TEXT") { window.userStrictChoice = "TEXT_MODE_FLAG"; optsContainer.innerHTML = `<textarea id="strictEssayAnswer" rows="6" placeholder="พิมพ์คำตอบของคุณที่นี่..." style="width:100%; border:2px solid #e1e4e8; padding:15px; border-radius:12px; resize:none;"></textarea>`; document.getElementById("confirmStrictBtn").classList.remove("hidden"); } 
-    else { q.options.forEach((opt, idx) => { let b = document.createElement("button"); b.className = "opt-btn"; b.innerText = opt; b.onclick = () => { window.userStrictChoice = idx+1; document.querySelectorAll(".opt-btn").forEach(btn => btn.classList.remove("selected")); b.classList.add("selected"); document.getElementById("confirmStrictBtn").classList.remove("hidden"); }; optsContainer.appendChild(b); }); }
-    window.strictTimeTotal = q.time; window.startStrictTimer(q.time);
-  };
-
-  window.startStrictTimer = (s) => {
-    clearInterval(window.timerInterval); document.getElementById("strictTimerText").innerText = s; document.getElementById("strictTimerFill").style.width = "100%";
-    window.timerInterval = setInterval(() => { 
-      s--; 
-      document.getElementById("strictTimerText").innerText = s; 
-      document.getElementById("strictTimerFill").style.width = (s/window.strictTimeTotal*100) + "%"; 
-      if(s <= 0) { clearInterval(window.timerInterval); window.submitStrictAnswer(0); } 
+  window.startFreeTimer = (sec) => {
+    document.getElementById('freeTimerArea').classList.remove('hidden');
+    window.timerInterval = setInterval(() => {
+      sec--; let m=Math.floor(sec/60), s=sec%60; document.getElementById("globalTimer").innerText = `${m}:${s<10?'0'+s:s}`;
+      if(sec<=0) { clearInterval(window.timerInterval); submitFinalExam(true); }
     }, 1000);
   };
 
-  window.confirmStrictAnswer = () => { 
-    if(window.userStrictChoice === "TEXT_MODE_FLAG") { let essayAns = document.getElementById("strictEssayAnswer").value.trim(); if(!essayAns) { alert("กรุณาพิมพ์คำตอบก่อนกดยืนยันครับ"); return; } document.getElementById("confirmStrictBtn").classList.add("hidden"); window.submitStrictAnswer(essayAns); } 
-    else if(window.userStrictChoice) { document.getElementById("confirmStrictBtn").classList.add("hidden"); window.submitStrictAnswer(window.userStrictChoice); } 
+  window.startInternalTimer = (sec, mode) => {
+    clearInterval(window.timerInterval);
+    document.getElementById('strictTimerArea').classList.remove('hidden');
+    let total = sec;
+    window.timerInterval = setInterval(() => {
+      sec--; 
+      document.getElementById("strictTimerText").innerText = sec;
+      document.getElementById("strictTimerFill").style.width = (sec/total*100) + "%";
+      if(sec<=0) { 
+        clearInterval(window.timerInterval); 
+        let q = window.allQuizQuestions[window.currentQIndex];
+        let val = (q.type==='TEXT') ? (document.getElementById('essayAns').value) : (window.userStrictChoice || 0);
+        handleStepNext(val, mode);
+      }
+    }, 1000);
   };
 
-  window.submitStrictAnswer = async (choiceOrText) => {
-    clearInterval(window.timerInterval); document.getElementById('overlay').classList.remove('hidden');
-    let q = window.allQuizQuestions[window.currentQIndex]; let isCorrect = false; let responsePayload = { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type || "CHOICE" };
-    if(q.type === "TEXT") { responsePayload.result = "MANUAL_CHECK"; responsePayload.textAnswer = choiceOrText; } 
-    else { isCorrect = (choiceOrText === q.ans && choiceOrText !== 0); responsePayload.result = isCorrect ? "RIGHT" : "WRONG"; }
-    await addDoc(collection(db, "responses"), responsePayload);
-    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID); let sDoc = await getDoc(scoreRef); let curScore = sDoc.data().score; let newScore = isCorrect ? curScore + 1 : curScore; let isLastQ = (window.currentQIndex >= window.allQuizQuestions.length - 1);
-    await updateDoc(scoreRef, { score: newScore, status: isLastQ ? "DONE" : "WAITING" }); document.getElementById('overlay').classList.add('hidden'); 
-    if(isLastQ) { let totalChoiceQs = window.allQuizQuestions.filter(x => x.type !== "TEXT").length; document.getElementById("finalScoreDisplay").innerText = newScore + "/" + totalChoiceQs; showView('resultView'); } 
-    else { window.currentQIndex++; window.renderStrictQuestion(); }
+  window.confirmStrictAnswer = () => {
+    let q = window.allQuizQuestions[window.currentQIndex];
+    let val = (q.type==='TEXT') ? (document.getElementById('essayAns').value) : (window.userStrictChoice);
+    if(!val && q.type==='TEXT') return alert("กรุณาพิมพ์คำตอบก่อนยืนยัน");
+    if(!val && q.type==='CHOICE') return alert("กรุณาเลือกคำตอบก่อนยืนยัน");
+    handleStepNext(val, document.getElementById('examModeSelect').value);
   };
 
-  window.searchPortal = async () => {
-    document.getElementById('overlay').classList.remove('hidden'); let id = document.getElementById('portalId').value;
-    let scSnap = await getDocs(query(collection(db, "scores"), where("studentID", "==", id))); let h = "<h4>ผลการสอบ</h4>";
-    if(scSnap.empty) h += "ไม่พบข้อมูล";
-    else { for (let scDoc of scSnap.docs) { let sData = scDoc.data(); let sessionSnap = await getDoc(doc(db, "sessions", sData.sessionID)); let sName = sessionSnap.exists() ? sessionSnap.data().name : "ไม่ระบุวิชา"; h += `<div class="list-item"><span><b style="color:var(--text);">${sName}</b>: ${sData.score} คะแนน</span></div>`; } }
-    document.getElementById('portalResult').innerHTML = h; document.getElementById('overlay').classList.add('hidden');
+  window.handleStepNext = async (val, mode) => {
+    clearInterval(window.timerInterval);
+    let q = window.allQuizQuestions[window.currentQIndex];
+    let isCorrect = (q.type==='CHOICE' && val === q.ans);
+    await addDoc(collection(db, "responses"), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type, ans: val, textAnswer: q.type==='TEXT'?val:'', result: isCorrect?'RIGHT':'WRONG' });
+    
+    let isLast = (window.currentQIndex >= window.allQuizQuestions.length - 1);
+    if(isCorrect) {
+      let scRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      let sDoc = await getDoc(scRef);
+      await updateDoc(scRef, { score: (sDoc.data().score || 0) + 1 });
+    }
+
+    if(isLast) submitFinalExam(true);
+    else {
+      if(mode === 'SYNC') {
+        document.getElementById('waitingSignalArea').classList.remove('hidden');
+        document.getElementById('questionContainerArea').classList.add('hidden');
+      } else {
+        window.currentQIndex++; renderQuiz({examMode: mode});
+      }
+    }
   };
 
-  window.addEventListener('DOMContentLoaded', (event) => { window.resetQForm(); });
+  window.submitFinalExam = async (isAuto = false) => {
+    if(!isAuto && !confirm("ยืนยันการส่งข้อสอบทั้งหมด?")) return;
+    clearInterval(window.timerInterval); if(syncUnsub) syncUnsub();
+    document.getElementById('overlay').classList.remove('hidden');
+    
+    let sSnap = await getDoc(doc(db, "sessions", window.currentSessionID));
+    let showScore = sSnap.data().showScore !== false;
+
+    if(sSnap.data().examMode === 'FREE') {
+      const batch = writeBatch(db); let score = 0;
+      window.allQuizQuestions.forEach(q => {
+        let ans = window.myAnswers[q.qNum]; let ok = (q.type==='CHOICE' && ans === q.ans); if(ok) score++;
+        batch.set(doc(collection(db, "responses")), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type, ans: q.type==='CHOICE'?ans:0, textAnswer: q.type==='TEXT'?ans:'', result: q.type==='TEXT'?'MANUAL':(ok?'RIGHT':'WRONG') });
+      });
+      let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      batch.update(scoreRef, { score, status: "DONE", submittedTimeStr: new Date().toLocaleString('th-TH') });
+      await batch.commit();
+      document.getElementById("finalScoreDisplay").innerText = score + " / " + window.allQuizQuestions.filter(x=>x.type==='CHOICE').length;
+    } else {
+      let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      let sDoc = await getDoc(scoreRef);
+      await updateDoc(scoreRef, { status: "DONE", submittedTimeStr: new Date().toLocaleString('th-TH') });
+      document.getElementById("finalScoreDisplay").innerText = (sDoc.data().score || 0) + " / " + window.allQuizQuestions.filter(x=>x.type==='CHOICE').length;
+    }
+
+    localStorage.removeItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`);
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('scoreDisplayArea').classList.toggle('hidden', !showScore);
+    document.getElementById('noScoreDisplayArea').classList.toggle('hidden', showScore);
+    showView('resultView');
+  };
+
+  // Analytics & Excel
+  window.exportToCSV = async () => {
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    let txtQs = []; qSnap.forEach(d => { if(d.data().type==='TEXT') txtQs.push(d.data().qNum); }); txtQs.sort((a,b)=>a-b);
+    let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
+    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
+    let rMap = {}; rSnap.forEach(r => { let d=r.data(); if(d.type==='TEXT') rMap[`${d.studentID}_${d.qNum}`] = d.textAnswer; });
+
+    let csv = "\uFEFFรหัสนักศึกษา,ชื่อ,คะแนนช้อยส์,สลับหน้าจอ(ครั้ง),สถานะ,เวลาที่ส่ง";
+    txtQs.forEach(q => csv += `,ข้อเขียน ${q}`); csv += "\n";
+    scSnap.forEach(doc => {
+      let d = doc.data();
+      csv += `"${d.studentID}","${d.studentName}","${d.score}","${d.tabSwitches || 0}","${d.status}","${d.submittedTimeStr || '-'}"`;
+      txtQs.forEach(q => csv += `,"${(rMap[`${d.studentID}_${q}`]||'').replace(/"/g,'""')}"`); csv += "\n";
+    });
+    let blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    let link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+    link.download = `คะแนน_${document.getElementById('manageSessionTitle').innerText}.csv`; link.click();
+  };
+
+  window.renderNav = () => {
+    let n = document.getElementById("qNavigator"); n.innerHTML = ""; n.classList.remove('hidden');
+    window.allQuizQuestions.forEach((q,i) => {
+      let b = document.createElement("div"); b.className = `nav-box ${i===window.currentQIndex?'current':''} ${window.myAnswers[q.qNum]?'answered':''}`;
+      b.innerText = q.qNum; b.onclick = () => { window.currentQIndex = i; renderQuiz({examMode: 'FREE'}); }; n.appendChild(b);
+    });
+  };
+  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length-1) { window.currentQIndex++; renderQuiz({examMode: 'FREE'}); } };
+  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; renderQuiz({examMode: 'FREE'}); } };
+
+  window.addEventListener('DOMContentLoaded', () => { resetQForm(); });
 </script>
 </body>
 </html>
