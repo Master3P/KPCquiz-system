@@ -123,10 +123,10 @@
     </div>
   </div>
 
-  <header id="mainHeader" class="hidden" style="background: linear-gradient(90deg, #11165e, #3b0964);">
-    <button style="width:auto; background:none; color:white; font-size:18px; padding:5px;" onclick="window.goHome()"><i class="fas fa-home"></i></button>
-    <h2 style="margin:0; font-size: 16px;">ระบบทำแบบทดสอบ</h2>
-    <button style="width:auto; background:none; color:white; font-size:18px; padding:5px;" onclick="window.goHome()"><i class="fas fa-sign-out-alt"></i></button>
+  <header id="mainHeader" class="hidden" style="background: linear-gradient(90deg, #11165e, #3b0964); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;">
+    <button style="width:auto; background:none; color:white; font-size:20px; padding:5px; border:none; margin:0; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-home"></i></button>
+    <h2 style="margin:0; font-size: 16px; color: white; font-weight: 600;">ระบบทำแบบทดสอบ</h2>
+    <button style="width:auto; background:none; color:white; font-size:20px; padding:5px; border:none; margin:0; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-sign-out-alt"></i></button>
   </header>
 
   <div id="adminLayoutView" class="hidden admin-layout">
@@ -143,8 +143,7 @@
         
         <div id="manageMenus" class="hidden" style="background: rgba(0,0,0,0.2); padding: 5px 0;">
            <div class="sidebar-title" style="padding: 10px 20px; font-size: 11px; color:#7f8c8d; font-weight:600;">เมนูจัดการวิชาปัจจุบัน</div>
-           <li id="menuManageSet" onclick="window.showAdminTab('manageSet')"><i class="fas fa-cog" style="width:20px;"></i> ตั้งค่าการสอบ</li>
-           <li id="menuManageQ" onclick="window.showAdminTab('manageQ')"><i class="fas fa-file-invoice" style="width:20px;"></i> จัดการข้อสอบ</li>
+           <li id="menuManageQ" onclick="window.showAdminTab('manageQ')"><i class="fas fa-file-invoice" style="width:20px;"></i> จัดการข้อสอบ (และตั้งค่า)</li>
            <li id="menuManageLive" onclick="window.showAdminTab('manageLive')"><i class="fas fa-broadcast-tower" style="width:20px;"></i> แผงควบคุม (Live)</li>
         </div>
 
@@ -190,39 +189,38 @@
         </div>
       </div>
 
-      <div id="adminTabManageSet" class="hidden">
-        <h2 id="titleManageSet" style="margin-top:0; color:var(--main); font-size: 18px;"></h2>
-        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); max-width: 600px;">
-          <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px; font-size: 15px;"><i class="fas fa-cog"></i> ตั้งค่ารูปแบบ</h4>
-          <select id="examModeSelect" onchange="window.toggleExamModeSetup()">
-            <option value="FREE">🏃 โหมดอิสระ (เหมารวม / ทำข้ามข้อได้)</option>
-            <option value="STRICT">⏳ โหมดบังคับ (ทีละข้อ / ถอยกลับไม่ได้)</option>
-            <option value="SYNC">🔔 โหมดข้อสอบกริ๊ง (ทำพร้อมกันทั้งห้อง)</option>
-          </select>
-          <div id="globalTimeSetup">
-            <label style="font-weight:600; font-size:13px;">เวลาทำข้อสอบรวม (นาที):</label>
-            <input type="number" id="globalTimeInput" value="60">
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; background:#f9f9f9; padding:12px; border-radius:8px;">
-            <input type="checkbox" id="showScoreCheck" style="width:16px; height:16px; margin:0;" checked> <label style="font-size: 13px; font-weight:600;">แสดงคะแนนหลังส่งทันที</label>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px; background:#f9f9f9; padding:12px; border-radius:8px;">
-            <input type="checkbox" id="randomizeCheck" style="width:16px; height:16px; margin:0;" checked> <label style="font-size: 13px; font-weight:600;">สลับลำดับ ก ข ค ง อัตโนมัติ</label>
-          </div>
-          <button class="btn-primary" onclick="window.saveSessionSettings()"><i class="fas fa-save"></i> บันทึกการตั้งค่า</button>
-        </div>
-        
-        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); max-width: 600px; margin-top:15px; border-top: 3px solid var(--danger);">
-          <h4 style="margin-top:0; color:var(--danger); font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> โซนอันตราย</h4>
-          <button class="btn-outline" style="border-color:#34495e; color:#34495e;" onclick="window.duplicateSession()"><i class="fas fa-copy"></i> โคลน (คัดลอก) วิชานี้</button>
-          <button class="btn-outline" style="border-color:var(--danger); color:var(--danger);" onclick="window.resetSessionData()">ล้างคะแนนเด็กทั้งหมด</button>
-        </div>
-      </div>
-
       <div id="adminTabManageQ" class="hidden">
         <h2 id="titleManageQ" style="margin-top:0; color:var(--main); font-size: 18px;"></h2>
+        
+        <div style="background:white; padding:15px 20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; border-top: 3px solid #3498db;">
+          <h4 style="margin:0 0 10px 0; color:var(--main); font-size: 14px;"><i class="fas fa-cog"></i> ตั้งค่ารูปแบบการสอบ (บันทึกอัตโนมัติ)</h4>
+          <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+             <div style="flex:1; min-width:200px;">
+               <label style="font-size:12px; color:#777;">โหมดคุมสอบ:</label>
+               <select id="examModeSelect" onchange="window.toggleExamModeSetup(); window.saveSessionSettings()" style="margin:0;">
+                  <option value="FREE">🏃 โหมดอิสระ (เหมารวม/ข้ามข้อได้)</option>
+                  <option value="STRICT">⏳ โหมดบังคับ (ทีละข้อ/ถอยไม่ได้)</option>
+                  <option value="SYNC">🔔 โหมดข้อสอบกริ๊ง (พร้อมกันทั้งห้อง)</option>
+               </select>
+             </div>
+             <div id="globalTimeSetup" style="flex:0.5; min-width:120px;">
+               <label style="font-size:12px; color:#777;">เวลารวม (นาที):</label>
+               <input type="number" id="globalTimeInput" onchange="window.saveSessionSettings()" style="margin:0;">
+             </div>
+             <div style="flex:1; min-width:250px; display:flex; flex-direction:column; gap:5px;">
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="showScoreCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;" checked>
+                 <label style="font-size: 13px;">แสดงคะแนนหลังส่งทันที</label>
+               </div>
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="randomizeCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;" checked>
+                 <label style="font-size: 13px;">สลับลำดับ ก ข ค ง อัตโนมัติ</label>
+               </div>
+             </div>
+          </div>
+        </div>
+
         <div class="admin-panel-row" style="display: flex; gap: 15px; align-items: flex-start;">
-          
           <div style="flex: 1; min-width: 280px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px solid #f0f2f5; padding-bottom:8px;">
               <h4 style="margin:0; font-size: 15px;"><i class="fas fa-list"></i> ข้อสอบในระบบ</h4>
@@ -261,7 +259,7 @@
       <div id="adminTabManageLive" class="hidden">
         <h2 id="titleManageLive" style="margin-top:0; color:var(--main); font-size: 18px;"></h2>
         
-        <div class="admin-panel-row" style="display:flex; gap:15px;">
+        <div class="admin-panel-row" style="display:flex; gap:15px; flex-wrap:wrap;">
           <div style="flex:1; min-width:280px;">
             <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px;">
               <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 15px;"><i class="fas fa-satellite-dish"></i> สถานะห้องสอบปัจจุบัน</h4>
@@ -281,14 +279,20 @@
               </div>
             </div>
 
-            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px;">
               <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 15px;"><i class="fas fa-file-download"></i> โหลดผลและวิเคราะห์</h4>
               <button class="btn-primary" style="background:#f39c12; padding:10px;" onclick="window.loadAnalytics()"><i class="fas fa-chart-bar"></i> กราฟวิเคราะห์ผลสอบ</button>
               <button class="btn-success" style="padding:10px;" onclick="window.exportToCSV()"><i class="fas fa-file-excel"></i> ดาวน์โหลดคะแนน (Excel)</button>
             </div>
+
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); border-top: 3px solid var(--danger);">
+              <h4 style="margin-top:0; color:var(--danger); font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> โซนจัดการระบบ</h4>
+              <button class="btn-outline" style="border-color:#34495e; color:#34495e; padding:10px;" onclick="window.duplicateSession()"><i class="fas fa-copy"></i> โคลน (คัดลอก) วิชานี้</button>
+              <button class="btn-outline" style="border-color:var(--danger); color:var(--danger); padding:10px; margin-bottom:0;" onclick="window.resetSessionData()"><i class="fas fa-trash-alt"></i> ล้างคะแนนเด็กทั้งหมด</button>
+            </div>
           </div>
 
-          <div id="syncRemoteArea" class="hidden" style="flex:1; min-width:280px; background:#fffcf5; padding:20px; border-radius:12px; border:2px solid var(--secondary); box-shadow:0 4px 10px rgba(255, 179, 0, 0.1);">
+          <div id="syncRemoteArea" class="hidden" style="flex:1; min-width:280px; max-height: 250px; background:#fffcf5; padding:20px; border-radius:12px; border:2px solid var(--secondary); box-shadow:0 4px 10px rgba(255, 179, 0, 0.1);">
             <h3 style="margin-top:0; color:#d35400; text-align:center; font-size: 16px;"><i class="fas fa-bell"></i> รีโมทควบคุม (กริ๊ง)</h3>
             <p style="text-align:center; color:#777; font-size:12px; margin-bottom: 20px;">นักศึกษาทุกคนจะไปพร้อมกัน</p>
             
@@ -432,7 +436,7 @@
 
   window.currentSessionID = ""; window.myStudentID = ""; window.allQuizQuestions = []; window.currentQIndex = 0; window.myAnswers = {}; window.timerInterval = null; window.isEditing = false;
   let adminUnsub = null; let studentUnsub = null; let syncUnsub = null;
-  window.lastSyncTime = 0; window.teacherTimerInterval = null;
+  window.lastSyncTime = 0; window.teacherTimerInterval = null; window.myStartTime = 0;
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
 
@@ -459,7 +463,7 @@
 
   // Admin Sidebar Nav Logic
   window.showAdminTab = (tabName) => {
-    ['Dashboard', 'Create', 'ManageSet', 'ManageQ', 'ManageLive', 'Analytics'].forEach(t => {
+    ['Dashboard', 'Create', 'ManageQ', 'ManageLive', 'Analytics'].forEach(t => {
        document.getElementById('adminTab' + t).classList.add('hidden');
     });
     document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
@@ -527,7 +531,6 @@
 
   window.manageSession = async (id, name, status) => {
     window.currentSessionID = id; 
-    document.getElementById('titleManageSet').innerText = name;
     document.getElementById('titleManageQ').innerText = name;
     document.getElementById('titleManageLive').innerText = name;
 
@@ -555,14 +558,12 @@
   };
 
   window.saveSessionSettings = async () => {
-    document.getElementById('overlay').classList.remove('hidden');
     await updateDoc(doc(db, "sessions", window.currentSessionID), { 
       examMode: document.getElementById('examModeSelect').value, 
       globalTime: parseInt(document.getElementById('globalTimeInput').value),
       showScore: document.getElementById('showScoreCheck').checked,
       randomize: document.getElementById('randomizeCheck').checked
     }); 
-    document.getElementById('overlay').classList.add('hidden'); alert("บันทึกการตั้งค่าสำเร็จ");
   };
 
   window.changeStatus = async (s) => { await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s }); window.updateStatusUI(s); };
@@ -746,12 +747,14 @@
 
     window.myAnswers = {}; window.shuffledIndices = {}; 
     if(sDoc.exists()) {
+      window.myStartTime = sDoc.data().startedAt || Date.now();
       let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID), where("studentID", "==", window.myStudentID)));
       rSnap.forEach(r => { let d = r.data(); window.myAnswers[d.qNum] = d.type === "TEXT" ? d.textAnswer : d.ans; });
       let localDraft = localStorage.getItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`);
       if(localDraft) window.myAnswers = { ...window.myAnswers, ...JSON.parse(localDraft) };
     } else {
-      await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING", tabSwitches: 0, startedAt: serverTimestamp() });
+      window.myStartTime = Date.now();
+      await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING", tabSwitches: 0, startedAt: window.myStartTime });
     }
     document.getElementById('overlay').classList.add('hidden'); window.showView('quizView');
 
@@ -784,7 +787,13 @@
         }
       });
     } else {
-      if(sData.examMode === "FREE") window.startFreeTimer(sData.globalTime * 60); else window.startInternalTimer(window.allQuizQuestions[0].time, sData.examMode);
+      if(sData.examMode === "FREE") {
+         let elapsed = Math.floor((Date.now() - window.myStartTime) / 1000);
+         let remaining = (sData.globalTime * 60) - elapsed;
+         window.startFreeTimer(remaining > 0 ? remaining : 0);
+      } else {
+         window.startInternalTimer(window.allQuizQuestions[0].time, sData.examMode);
+      }
       window.renderQuiz(sData);
     }
   };
@@ -906,7 +915,9 @@
     if(sSnap.data().examMode === 'FREE') {
       const batch = writeBatch(db); let score = 0;
       window.allQuizQuestions.forEach(q => {
-        let ans = window.myAnswers[q.qNum]; let ok = (q.type==='CHOICE' && ans === q.ans); if(ok) score++;
+        let ans = window.myAnswers[q.qNum];
+        if (ans === undefined) ans = (q.type === 'CHOICE') ? 0 : "";
+        let ok = (q.type==='CHOICE' && ans === q.ans); if(ok) score++;
         batch.set(doc(collection(db, "responses")), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type, ans: q.type==='CHOICE'?ans:0, textAnswer: q.type==='TEXT'?ans:'', result: q.type==='TEXT'?'MANUAL':(ok?'RIGHT':'WRONG') });
       });
       let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
