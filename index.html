@@ -216,6 +216,10 @@
                  <input type="checkbox" id="randomizeCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;" checked>
                  <label style="font-size: 13px;">สลับลำดับ ก ข ค ง อัตโนมัติ</label>
                </div>
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="randomizeQCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;">
+                 <label style="font-size: 13px; color: #d35400; font-weight: 600;">สลับโจทย์ข้อสอบ (ป้องกันแคปจอ)</label>
+               </div>
              </div>
           </div>
         </div>
@@ -272,10 +276,16 @@
                 <span id="finishCountDisplay" style="font-size:20px; font-weight:bold; color:#27ae60;">0</span>
               </div>
               
-              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                 <button id="btnStatWAITING" class="btn-outline" style="margin:0; padding:8px; font-size:12px;" onclick="window.changeStatus('WAITING')">พักห้องรอ</button>
                 <button id="btnStatSTART" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:#2ecc71; color:#2ecc71;" onclick="window.changeStatus('START')">เปิดสอบ</button>
-                <button id="btnStatEND" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:var(--danger); color:var(--danger);" onclick="window.changeStatus('END')">ปิดระบบ</button>
+                <button id="btnStatEND" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:#e67e22; color:#e67e22;" onclick="window.changeStatus('END')">ปิดระบบ (กลับหน้าแรก)</button>
+                <button id="btnStatFORCE_END" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:var(--danger); color:var(--danger);" onclick="window.changeStatus('FORCE_END')">ปิดสอบ (บังคับส่ง)</button>
+              </div>
+
+              <div id="adminFreeTimerDisplay" class="hidden" style="margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; text-align:center; border: 1px solid #ffeeba;">
+                <span style="font-size:13px; color:#856404; font-weight:600;"><i class="fas fa-stopwatch"></i> เวลาถอยหลัง (อิงตามเซิร์ฟเวอร์):</span><br>
+                <span id="adminLiveTimerText" style="font-size:28px; font-weight:bold; color:var(--danger); font-family:monospace;">00:00</span>
               </div>
             </div>
 
@@ -437,8 +447,26 @@
   window.currentSessionID = ""; window.myStudentID = ""; window.allQuizQuestions = []; window.currentQIndex = 0; window.myAnswers = {}; window.timerInterval = null; window.isEditing = false;
   let adminUnsub = null; let studentUnsub = null; let syncUnsub = null;
   window.lastSyncTime = 0; window.teacherTimerInterval = null; window.myStartTime = 0;
+  window.hasStartedExam = false; window.currentSessionData = null; window.adminSessionUnsub = null;
 
   google.charts.load('current', {'packages':['corechart', 'bar']});
+
+  // Global Interval for Admin Timer
+  setInterval(() => {
+    if(window.currentSessionData && window.currentSessionData.status === 'START' && window.currentSessionData.examMode === 'FREE') {
+      let el = document.getElementById('adminFreeTimerDisplay');
+      if(el) el.classList.remove('hidden');
+      let elapsed = Math.floor((Date.now() - (window.currentSessionData.startTime || Date.now())) / 1000);
+      let rem = (window.currentSessionData.globalTime * 60) - elapsed;
+      if(rem < 0) rem = 0;
+      let m = Math.floor(rem/60), s = rem%60;
+      let txt = document.getElementById('adminLiveTimerText');
+      if(txt) txt.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    } else {
+      let el = document.getElementById('adminFreeTimerDisplay');
+      if(el) el.classList.add('hidden');
+    }
+  }, 1000);
 
   // UI Handlers
   window.showView = (v) => { 
@@ -488,7 +516,7 @@
     document.getElementById('statSessions').innerText = sSnap.size; document.getElementById('statStudents').innerText = scSnap.size;
     let ss = []; sSnap.forEach(d => ss.push({id:d.id, ...d.data()})); ss.sort((a,b)=>b.createdAt - a.createdAt);
     let h = ""; ss.forEach(s => {
-      let iconColor = s.status==='START'?'#2ecc71':(s.status==='END'?'#e74c3c':'#3498db');
+      let iconColor = s.status==='START'?'#2ecc71':( (s.status==='END' || s.status==='FORCE_END') ?'#e74c3c':'#3498db');
       h += `<div class="folder-card" onclick="window.manageSession('${s.id}','${s.name}','${s.status}')">
               <div class="folder-icon" style="color:${iconColor}; background:${iconColor}20;"><i class="fas fa-folder"></i></div>
               <h3 style="margin:0 0 5px 0; color:var(--main); font-size:16px;">${s.name}</h3>
@@ -502,7 +530,7 @@
   window.createSession = async () => {
     let n = document.getElementById('newSessionName').value; if(!n) return alert('กรุณาตั้งชื่อวิชา');
     document.getElementById('overlay').classList.remove('hidden');
-    let ref = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, showScore: true, randomize: true, syncQNum: 1, syncTriggerTime: Date.now(), createdAt: Date.now() });
+    let ref = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, showScore: true, randomize: true, randomizeQ: false, syncQNum: 1, syncTriggerTime: Date.now(), createdAt: Date.now() });
     document.getElementById('overlay').classList.add('hidden');
     document.getElementById('newSessionName').value = "";
     window.manageSession(ref.id, n, "WAITING");
@@ -539,6 +567,7 @@
     document.getElementById('globalTimeInput').value = sData.globalTime || 60;
     document.getElementById('showScoreCheck').checked = sData.showScore !== false;
     document.getElementById('randomizeCheck').checked = sData.randomize !== false;
+    document.getElementById('randomizeQCheck').checked = sData.randomizeQ === true;
     document.getElementById('syncQNumDisplay').innerText = sData.syncQNum || 1;
     
     window.toggleExamModeSetup(); window.loadQuestions(); window.updateStatusUI(status);
@@ -548,6 +577,11 @@
     adminUnsub = onSnapshot(query(collection(db, "scores"), where("sessionID", "==", id)), (snap) => {
       let wait = 0, done = 0; snap.forEach(d => { if(d.data().status==='DONE') done++; else wait++; });
       document.getElementById('waitCountDisplay').innerText = wait + done; document.getElementById('finishCountDisplay').innerText = done;
+    });
+
+    if(window.adminSessionUnsub) window.adminSessionUnsub();
+    window.adminSessionUnsub = onSnapshot(doc(db, "sessions", id), (snap) => {
+      window.currentSessionData = snap.data();
     });
   };
 
@@ -562,11 +596,18 @@
       examMode: document.getElementById('examModeSelect').value, 
       globalTime: parseInt(document.getElementById('globalTimeInput').value),
       showScore: document.getElementById('showScoreCheck').checked,
-      randomize: document.getElementById('randomizeCheck').checked
+      randomize: document.getElementById('randomizeCheck').checked,
+      randomizeQ: document.getElementById('randomizeQCheck').checked
     }); 
   };
 
-  window.changeStatus = async (s) => { await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s }); window.updateStatusUI(s); };
+  window.changeStatus = async (s) => { 
+    let updateData = { status: s };
+    if (s === 'START') updateData.startTime = Date.now();
+    await updateDoc(doc(db, "sessions", window.currentSessionID), updateData); 
+    window.updateStatusUI(s); 
+  };
+  
   window.updateStatusUI = (st) => { 
     document.querySelectorAll('[id^="btnStat"]').forEach(b => { b.style.background="white"; b.style.color="var(--main)"; });
     let active = document.getElementById('btnStat'+st); 
@@ -678,7 +719,29 @@
     window.isEditing = false; document.getElementById('qText').value=""; document.getElementById('dynamicOptionsContainer').innerHTML=""; 
     [1,2,3,4].forEach(()=>window.addOptionField()); document.getElementById('btnCancelEdit').classList.add('hidden'); 
   };
-  window.delQ = async (id) => { if(confirm("ลบข้อนี้?")) { await deleteDoc(doc(db, "questions", id)); window.loadQuestions(); } };
+  
+  // Resequence Questions when one is deleted
+  window.delQ = async (id) => { 
+    if(!confirm("ลบข้อนี้?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    await deleteDoc(doc(db, "questions", id)); 
+    
+    // ดึงโจทย์ที่เหลือมาเรียงลำดับใหม่
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    let qs = []; 
+    qSnap.forEach(d => qs.push({id: d.id, ...d.data()}));
+    qs.sort((a,b) => a.qNum - b.qNum);
+    
+    const batch = writeBatch(db);
+    qs.forEach((q, idx) => {
+        if (q.qNum !== idx + 1) {
+            batch.update(doc(db, "questions", q.id), { qNum: idx + 1 });
+        }
+    });
+    await batch.commit();
+    document.getElementById('overlay').classList.add('hidden');
+    window.loadQuestions(); 
+  };
 
   window.duplicateSession = async () => {
     if(!confirm("ยืนยันการคัดลอกวิชานี้ไปสร้างเป็นห้องใหม่?")) return;
@@ -733,7 +796,7 @@
 
   window.loadActiveSessions = async () => {
     let snap = await getDocs(collection(db, "sessions")); let s = document.getElementById('studentSessionSelect'); s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
-    snap.forEach(d => { if(d.data().status !== 'END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
+    snap.forEach(d => { if(d.data().status !== 'END' && d.data().status !== 'FORCE_END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
   };
 
   window.studentJoinQuiz = async () => {
@@ -761,16 +824,35 @@
     if(studentUnsub) studentUnsub();
     studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => { 
       let sd = snap.data();
-      if(sd.status==='START') window.startExam(sd); 
-      else if(sd.status==='END') window.goHome();
+      if(sd.status==='START' && !window.hasStartedExam) {
+         window.hasStartedExam = true;
+         window.startExam(sd); 
+      } 
+      else if(sd.status==='END') {
+         window.goHome(); // ปิดระบบแบบเดิม (ไม่บังคับส่ง) กลับหน้าแรก
+      }
+      else if(sd.status==='FORCE_END') {
+         if (!document.getElementById('quizView').classList.contains('hidden') || !document.getElementById('waitingSignalArea').classList.contains('hidden')) {
+             alert("หมดเวลา! อาจารย์ได้ทำการบังคับปิดสอบ ระบบจะส่งคำตอบของคุณอัตโนมัติ");
+             window.submitFinalExam(true);
+         } else if (document.getElementById('resultView').classList.contains('hidden')) {
+             window.goHome();
+         }
+      }
     });
   };
 
   window.startExam = async (sData) => {
+    window.studentSessionData = sData;
     let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
     window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push(d.data()));
     window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
     document.getElementById("studentIdDisplay").innerText = window.myStudentID;
+
+    // Shuffle questions if RandomizeQ is enabled and NOT in SYNC mode
+    if (sData.randomizeQ && sData.examMode !== 'SYNC') {
+       window.allQuizQuestions.sort(() => Math.random() - 0.5);
+    }
     
     if(sData.examMode === "SYNC") {
       if(syncUnsub) syncUnsub();
@@ -783,24 +865,28 @@
           document.getElementById('questionContainerArea').classList.remove('hidden');
           
           window.userStrictChoice = null; 
-          window.renderQuiz(data);
+          window.renderQuiz();
         }
       });
     } else {
       if(sData.examMode === "FREE") {
-         let elapsed = Math.floor((Date.now() - window.myStartTime) / 1000);
+         let startTime = sData.startTime || window.myStartTime;
+         let elapsed = Math.floor((Date.now() - startTime) / 1000);
          let remaining = (sData.globalTime * 60) - elapsed;
          window.startFreeTimer(remaining > 0 ? remaining : 0);
       } else {
          window.startInternalTimer(window.allQuizQuestions[0].time, sData.examMode);
       }
-      window.renderQuiz(sData);
+      window.renderQuiz();
     }
   };
 
-  window.renderQuiz = (sData) => {
+  window.renderQuiz = () => {
+    let sData = window.studentSessionData;
     let q = window.allQuizQuestions[window.currentQIndex]; if(!q) return;
-    document.getElementById("qCounter").innerText = `ข้อที่ ${q.qNum} / ${window.allQuizQuestions.length}`;
+    
+    // Mask original qNum with sequential index
+    document.getElementById("qCounter").innerText = `ข้อที่ ${window.currentQIndex + 1} / ${window.allQuizQuestions.length}`;
     document.getElementById("questionText").innerText = q.question;
     let box = document.getElementById("optionsContainer"); box.innerHTML = "";
     
@@ -899,7 +985,7 @@
         document.getElementById('waitingSignalArea').classList.remove('hidden');
         document.getElementById('questionContainerArea').classList.add('hidden');
       } else {
-        window.currentQIndex++; window.renderQuiz({examMode: 'STRICT', randomize: true}); 
+        window.currentQIndex++; window.renderQuiz(); 
       }
     }
   };
@@ -964,12 +1050,15 @@
   window.renderNav = () => {
     let n = document.getElementById("qNavigator"); n.innerHTML = ""; n.classList.remove('hidden');
     window.allQuizQuestions.forEach((q,i) => {
-      let b = document.createElement("div"); b.className = `nav-box ${i===window.currentQIndex?'current':''} ${window.myAnswers[q.qNum]?'answered':''}`;
-      b.innerText = q.qNum; b.onclick = () => { window.currentQIndex = i; window.renderQuiz({examMode: 'FREE', randomize: false}); }; n.appendChild(b);
+      let isAnswered = (window.myAnswers[q.qNum] !== undefined && window.myAnswers[q.qNum] !== "");
+      let b = document.createElement("div"); 
+      b.className = `nav-box ${i===window.currentQIndex?'current':''} ${isAnswered?'answered':''}`;
+      b.innerText = i + 1; // Display sequential number, not original qNum
+      b.onclick = () => { window.currentQIndex = i; window.renderQuiz(); }; n.appendChild(b);
     });
   };
-  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length-1) { window.currentQIndex++; window.renderQuiz({examMode: 'FREE', randomize: false}); } };
-  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderQuiz({examMode: 'FREE', randomize: false}); } };
+  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length-1) { window.currentQIndex++; window.renderQuiz(); } };
+  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderQuiz(); } };
 
   window.addEventListener('DOMContentLoaded', () => { window.resetQForm(); });
 </script>
