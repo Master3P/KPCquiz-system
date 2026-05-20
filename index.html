@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ระบบแบบทดสอบออนไลน์ (Secure Auth)</title>
+  <title>ระบบแบบทดสอบออนไลน์</title>
   
   <script>
     window.onerror = function(m, s, l) { alert("พบข้อผิดพลาด: " + m + " (บรรทัด " + l + ")"); return false; };
@@ -28,12 +28,8 @@
     .gate-card i { font-size: 35px; color: #3b0964; margin-bottom: 10px; }
     .gate-card h3 { margin: 0; font-size: 16px; color: #3b0964; }
     .developer-credit-white { text-align: center; margin-top: 25px; font-size: 13px; color: white; opacity: 0.9; }
-
-    /* Google Auth Button */
-    .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .btn-google img { width: 20px; }
     
-    /* Admin Dashboard UI */
+    /* Admin Dashboard UI (Sidebar Layout) */
     .admin-layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; background: #f0f2f5; }
     .sidebar { width: 240px; background: var(--main); color: white; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; }
     .sidebar-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
@@ -41,35 +37,60 @@
     .sidebar-menu li:hover, .sidebar-menu li.active { background: rgba(255,255,255,0.05); color: white; border-left: 4px solid var(--secondary); }
     .admin-content { flex: 1; overflow-y: auto; padding: 20px; }
     
-    /* Session Folders */
+    /* Stats & Folders */
+    .stat-box { background: white; padding: 20px; border-radius: 12px; flex: 1; border-bottom: 4px solid var(--primary-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between; }
+    .stat-box h1 { margin: 0; font-size: 35px; color: var(--main); }
+    .stat-box p { margin: 5px 0 0 0; color: #7f8c8d; font-size: 13px; font-weight: 600; }
     .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
-    .folder-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; border: 1px solid #e1e4e8; display: flex; flex-direction: column; }
+    .folder-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; transition: 0.3s; border: 1px solid #e1e4e8; display: flex; flex-direction: column; }
+    .folder-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: #d1d8e0; }
     .folder-icon { width: 45px; height: 45px; background: #f0f4f8; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; color: #3498db; }
     
-    /* Components */
-    input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; margin-bottom: 12px; font-family: 'Prompt'; font-size: 14px; box-sizing: border-box; background: #fafbfc; }
+    /* Form & Inputs */
+    input, select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; margin-bottom: 12px; font-family: 'Prompt'; font-size: 14px; box-sizing: border-box; background: #fafbfc; transition: 0.2s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-blue); background: white; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
     button { padding: 10px; border-radius: 8px; border: none; font-weight: 600; font-family: 'Prompt'; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; font-size: 14px; }
-    .btn-main { background: #3b0964; color: white; }
+    .btn-main { background: #3b0964; color: white; } .btn-main:hover { background: #2c064a; }
     .btn-primary { background: var(--primary-blue); color: white; }
-    .btn-outline { background: white; border: 2px solid #3b0964; color: #3b0964; }
+    .btn-outline { background: white; border: 2px solid #3b0964; color: #3b0964; } .btn-outline:hover { background: #f8f9fa; }
     .btn-danger { background: var(--danger); color: white; }
     .btn-success { background: var(--success); color: white; }
     .btn-mini { width: auto; padding: 6px 12px; font-size: 13px; margin: 0; }
 
-    /* Student View */
+    /* Student View Structure */
     .container { padding: 15px; max-width: 700px; margin: 0 auto; box-sizing: border-box; }
     .m-card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #e1e4e8; }
+    
+    /* Quiz Elements */
     .timer-text-global { font-size: 22px; font-weight: 600; color: var(--danger); font-family: monospace; }
-    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 14px; border-radius: 10px; margin-bottom: 10px; width: 100%; font-size: 14px; transition: 0.2s; cursor: pointer; }
-    .opt-btn.selected { background: #fffcf5; border-color: var(--secondary); font-weight: 600; color: #3b0964; }
+    .timer-bar { height: 8px; background: #e1e4e8; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+    #strictTimerFill { height: 100%; background: var(--danger); width: 100%; transition: 1s linear; }
+    .opt-btn { background: white; border: 2px solid #eee; text-align: left; padding: 14px; border-radius: 10px; margin-bottom: 10px; width: 100%; font-size: 14px; color: var(--text); transition: 0.2s; cursor: pointer; }
+    .opt-btn.selected { background: #fffcf5; border-color: var(--secondary); font-weight: 600; color: #3b0964; box-shadow: 0 2px 8px rgba(255, 179, 0, 0.15); }
     .nav-box { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #e1e4e8; cursor: pointer; font-size: 14px; font-weight: 600; background: white; }
     .nav-box.answered { background: var(--success); color: white; border-color: var(--success); }
-    .list-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); }
+    .nav-box.current { border: 2px solid #3b0964; color: #3b0964; }
+    .list-item { background: #fff; padding: 12px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--secondary); font-size: 13px; }
 
-    /* Overlay */
+    /* Overlay & Modals */
     #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255, 255, 255, 0.9); z-index:9000; display:flex; flex-direction:column; justify-content:center; align-items:center; }
     .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .pin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 31, 54, 0.85); z-index: 4000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+
+    /* Mobile Responsive Additions */
+    @media (max-width: 768px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #ddd; }
+      .sidebar-menu { flex-direction: row; }
+      .sidebar-menu li { padding: 12px 15px; border-left: none; border-bottom: 3px solid transparent; }
+      .sidebar-menu li:hover, .sidebar-menu li.active { border-left: none; border-bottom: 3px solid var(--secondary); }
+      .sidebar-title { display: none !important; }
+      .admin-content { padding: 10px; }
+      .stat-box { flex-direction: column; text-align: center; }
+      .flex-wrap-mobile { flex-direction: column; }
+      .admin-panel-row { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -92,265 +113,482 @@
     <div class="developer-credit-white"><i class="fas fa-code"></i> Developed by <b>Kanpitcha</b></div>
   </div>
 
-  <div id="pinModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 31, 54, 0.85); z-index: 4000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div style="background: white; padding: 25px; border-radius: 15px; width: 280px; text-align: center; border-top: 5px solid var(--secondary);">
-      <h3 style="margin-top:0;">รหัสผ่านอาจารย์</h3>
+  <div id="pinModal" class="pin-modal hidden">
+    <div style="background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 280px; text-align: center; border-top: 5px solid var(--secondary); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+      <i class="fas fa-lock" style="font-size: 35px; color: #3b0964; margin-bottom: 10px;"></i>
+      <h3 style="margin-top:0; font-size: 18px;">รหัสผ่านอาจารย์</h3>
       <input type="password" id="adminPinInput" placeholder="PIN 4 หลัก" maxlength="4" style="text-align:center; font-size:20px; letter-spacing: 5px;">
       <button class="btn-main" onclick="window.verifyAdmin()">เข้าสู่ระบบ</button>
       <button class="btn-outline" onclick="window.closePinModal()">ยกเลิก</button>
     </div>
   </div>
 
-  <header id="mainHeader" class="hidden" style="background: linear-gradient(90deg, #11165e, #3b0964); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000;">
-    <button style="width:auto; background:none; color:white; font-size:20px; border:none; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-home"></i></button>
-    <h2 style="margin:0; font-size: 16px; color: white;">ระบบทำแบบทดสอบ</h2>
-    <button style="width:auto; background:none; color:white; font-size:20px; border:none; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-sign-out-alt"></i></button>
+  <header id="mainHeader" class="hidden" style="background: linear-gradient(90deg, #11165e, #3b0964); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;">
+    <button style="width:auto; background:none; color:white; font-size:20px; padding:5px; border:none; margin:0; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-home"></i></button>
+    <h2 style="margin:0; font-size: 16px; color: white; font-weight: 600;">ระบบทำแบบทดสอบ</h2>
+    <button style="width:auto; background:none; color:white; font-size:20px; padding:5px; border:none; margin:0; cursor:pointer;" onclick="window.goHome()"><i class="fas fa-sign-out-alt"></i></button>
   </header>
 
   <div id="adminLayoutView" class="hidden admin-layout">
     <aside class="sidebar">
-      <div style="padding: 20px; font-weight:600; background: #15192b;">แผงจัดการอาจารย์</div>
-      <ul class="sidebar-menu">
-        <li id="menuDashboard" class="active" onclick="window.showAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> ภาพรวม</li>
-        <li id="menuCreate" onclick="window.showAdminTab('create')"><i class="fas fa-plus-square"></i> เพิ่มวิชาใหม่</li>
-        <div id="manageMenus" class="hidden">
-           <li id="menuManageQ" onclick="window.showAdminTab('manageQ')"><i class="fas fa-file-invoice"></i> จัดการข้อสอบ</li>
-           <li id="menuManageLive" onclick="window.showAdminTab('manageLive')"><i class="fas fa-broadcast-tower"></i> แผงควบคุม</li>
+      <div class="sidebar-title" style="padding: 20px 15px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); background: #15192b;">
+        <div style="background:var(--secondary); width:35px; height:35px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--main); font-size: 16px;">
+          <i class="fas fa-school"></i>
         </div>
-        <li onclick="window.goHome()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</li>
+        ระบบจัดการสอบ
+      </div>
+      <ul class="sidebar-menu">
+        <li id="menuDashboard" class="active" onclick="window.showAdminTab('dashboard')"><i class="fas fa-chart-pie" style="width:20px;"></i> ภาพรวม (หน้าหลัก)</li>
+        <li id="menuCreate" onclick="window.showAdminTab('create')"><i class="fas fa-plus-square" style="width:20px;"></i> เพิ่มวิชาใหม่</li>
+        
+        <div id="manageMenus" class="hidden" style="background: rgba(0,0,0,0.2); padding: 5px 0;">
+           <div class="sidebar-title" style="padding: 10px 20px; font-size: 11px; color:#7f8c8d; font-weight:600;">เมนูจัดการวิชาปัจจุบัน</div>
+           <li id="menuManageQ" onclick="window.showAdminTab('manageQ')"><i class="fas fa-file-invoice" style="width:20px;"></i> จัดการข้อสอบ (และตั้งค่า)</li>
+           <li id="menuManageLive" onclick="window.showAdminTab('manageLive')"><i class="fas fa-broadcast-tower" style="width:20px;"></i> แผงควบคุม (Live)</li>
+        </div>
+
+        <li style="margin-top:auto; border-top:1px solid rgba(255,255,255,0.05);" onclick="window.goHome()"><i class="fas fa-sign-out-alt" style="width:20px;"></i> ออกจากระบบ</li>
       </ul>
     </aside>
-    <main class="admin-content">
+
+    <main class="admin-content" style="position: relative;">
+      
       <div id="adminTabDashboard">
-        <h3><i class="fas fa-folder-open"></i> รายวิชาทั้งหมด</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0; color:var(--main); font-size: 18px;"><i class="fas fa-th-large"></i> ภาพรวมระบบ</h2>
+          <button class="btn-primary btn-mini" style="border-radius:15px;" onclick="window.showAdminTab('create')">+ สร้างแบบทดสอบ</button>
+        </div>
+
+        <div style="display:flex; gap:15px; margin-bottom:25px; flex-wrap: wrap;">
+          <div class="stat-box" style="border-color: #f1c40f;">
+            <div>
+              <p>วิชาทั้งหมด</p>
+              <h1 id="statSessions">0</h1>
+            </div>
+            <i class="fas fa-book" style="font-size:40px; color:#fdf2e9; opacity:0.8;"></i>
+          </div>
+          <div class="stat-box" style="border-color: #2ecc71;">
+            <div>
+              <p>ผู้เข้าสอบรวม</p>
+              <h1 id="statStudents">0</h1>
+            </div>
+            <i class="fas fa-users" style="font-size:40px; color:#e8f8f5; opacity:0.8;"></i>
+          </div>
+        </div>
+
+        <h3 style="color:#555; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 16px;"><i class="fas fa-folder-open" style="color:var(--secondary);"></i> รายวิชาทั้งหมด</h3>
         <div id="sessionListGrid" class="folder-grid"></div>
       </div>
+
       <div id="adminTabCreate" class="hidden">
-        <h3>สร้างวิชาใหม่</h3>
-        <input type="text" id="newSessionName" placeholder="ชื่อแบบทดสอบ">
-        <button class="btn-main" onclick="window.createSession()">ยืนยัน</button>
+        <h2 style="margin-top:0; color:var(--main); font-size: 18px;">สร้างแบบทดสอบใหม่</h2>
+        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); max-width: 500px;">
+          <label style="font-weight:600; color:#555; font-size: 13px;">ชื่อแบบทดสอบ / รหัสวิชา:</label>
+          <input type="text" id="newSessionName" placeholder="เช่น กลางภาค ประวัติศาสตร์ Section 1" style="margin-top:8px;">
+          <button class="btn-main" onclick="window.createSession()">ยืนยันการสร้าง</button>
+        </div>
       </div>
+
       <div id="adminTabManageQ" class="hidden">
-        <h2 id="titleManageQ"></h2>
-        <div class="m-card">
-            <h4>ตั้งค่าการสอบ (บันทึกอัตโนมัติ)</h4>
-            <select id="examModeSelect" onchange="window.toggleExamModeSetup(); window.saveSessionSettings()">
-                <option value="FREE">โหมดอิสระ</option>
-                <option value="STRICT">โหมดบังคับทีละข้อ</option>
-                <option value="SYNC">โหมดข้อสอบกริ๊ง</option>
+        <h2 id="titleManageQ" style="margin-top:0; color:var(--main); font-size: 18px;"></h2>
+        
+        <div style="background:white; padding:15px 20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px; border-top: 3px solid #3498db;">
+          <h4 style="margin:0 0 10px 0; color:var(--main); font-size: 14px;"><i class="fas fa-cog"></i> ตั้งค่ารูปแบบการสอบ (บันทึกอัตโนมัติ)</h4>
+          <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+             <div style="flex:1; min-width:200px;">
+               <label style="font-size:12px; color:#777;">โหมดคุมสอบ:</label>
+               <select id="examModeSelect" onchange="window.toggleExamModeSetup(); window.saveSessionSettings()" style="margin:0;">
+                  <option value="FREE">🏃 โหมดอิสระ (เหมารวม/ข้ามข้อได้)</option>
+                  <option value="STRICT">⏳ โหมดบังคับ (ทีละข้อ/ถอยไม่ได้)</option>
+                  <option value="SYNC">🔔 โหมดข้อสอบกริ๊ง (พร้อมกันทั้งห้อง)</option>
+               </select>
+             </div>
+             <div id="globalTimeSetup" style="flex:0.5; min-width:120px;">
+               <label style="font-size:12px; color:#777;">เวลารวม (นาที):</label>
+               <input type="number" id="globalTimeInput" onchange="window.saveSessionSettings()" style="margin:0;">
+             </div>
+             <div style="flex:1; min-width:250px; display:flex; flex-direction:column; gap:5px;">
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="showScoreCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;" checked>
+                 <label style="font-size: 13px;">แสดงคะแนนหลังส่งทันที</label>
+               </div>
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="randomizeCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;" checked>
+                 <label style="font-size: 13px;">สลับลำดับ ก ข ค ง อัตโนมัติ</label>
+               </div>
+               <div style="display:flex; align-items:center; gap:5px;">
+                 <input type="checkbox" id="randomizeQCheck" onchange="window.saveSessionSettings()" style="width:16px; height:16px; margin:0;">
+                 <label style="font-size: 13px; color: #d35400; font-weight: 600;">สลับโจทย์ข้อสอบ (ป้องกันแคปจอ)</label>
+               </div>
+             </div>
+          </div>
+        </div>
+
+        <div class="admin-panel-row" style="display: flex; gap: 15px; align-items: flex-start;">
+          <div style="flex: 1; min-width: 280px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px solid #f0f2f5; padding-bottom:8px;">
+              <h4 style="margin:0; font-size: 15px;"><i class="fas fa-list"></i> ข้อสอบในระบบ</h4>
+              <select id="qFilterSelect" onchange="window.renderQuestionList()" style="width:110px; padding:6px; margin:0; font-size:13px;"></select>
+            </div>
+            <div id="existingQuestionsList" style="max-height: 450px; overflow-y: auto; padding-right:5px;"></div>
+          </div>
+
+          <div style="flex: 1; min-width: 280px; max-width: 400px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 14px;"><i class="fas fa-bolt"></i> นำเข้าโจทย์รวดเดียว (ก๊อปวาง)</h4>
+            <textarea id="bulkInputArea" rows="4" placeholder="วางข้อสอบ (มีเลขข้อ) พร้อมตัวเลือก ก ข ค ง ที่นี่..." style="font-size:13px; background:#fffcf5; border-color:var(--secondary);"></textarea>
+            <button class="btn-success" style="padding: 10px;" onclick="window.handleBulkImport()"><i class="fas fa-magic"></i> ประมวลผลเพิ่มเข้าคลัง</button>
+            
+            <h4 id="qFormTitle" style="margin-top:20px; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 14px;"><i class="fas fa-edit"></i> เพิ่ม/แก้ไข ทีละข้อ</h4>
+            <input type="hidden" id="editRowId">
+            <select id="qType" onchange="window.toggleQType()">
+              <option value="CHOICE">ปรนัย (ช้อยส์)</option>
+              <option value="TEXT">อัตนัย (ข้อเขียน)</option>
             </select>
-            <input type="number" id="globalTimeInput" placeholder="เวลารวม (นาที)" onchange="window.saveSessionSettings()">
-            <div style="margin: 10px 0;">
-                <input type="checkbox" id="showScoreCheck" onchange="window.saveSessionSettings()" checked> แสดงคะแนนหลังส่ง
-                <input type="checkbox" id="randomizeCheck" onchange="window.saveSessionSettings()" checked> สลับช้อยส์
-                <input type="checkbox" id="randomizeQCheck" onchange="window.saveSessionSettings()"> สลับโจทย์
+            <input type="text" id="qText" placeholder="โจทย์คำถาม">
+            <div id="choiceSetupArea">
+              <div id="dynamicOptionsContainer"></div>
+              <button class="btn-outline btn-mini" style="border-color:#ccc; color:#777;" onclick="window.addOptionField()">+ เพิ่มช้อยส์</button>
+              <select id="qAns" style="margin-top:12px; background:#e8f8f5; border-color:#2ecc71; color:#27ae60; font-weight:600;"></select>
             </div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <input type="number" id="qMin" placeholder="นาที" value="0">
+              <input type="number" id="qSec" placeholder="วินาที" value="30">
+            </div>
+            <button class="btn-main" onclick="window.handleQuestionSubmit()"><i class="fas fa-save"></i> บันทึกข้อนี้</button>
+            <button id="btnCancelEdit" class="btn-outline hidden" onclick="window.resetQForm()">ยกเลิกการแก้ไข</button>
+          </div>
         </div>
-        <div id="existingQuestionsList"></div>
-        <textarea id="bulkInputArea" rows="4" placeholder="ก๊อปปี้ข้อสอบมาวางที่นี่..."></textarea>
-        <button class="btn-success" onclick="window.handleBulkImport()">นำเข้าข้อสอบ</button>
       </div>
+
       <div id="adminTabManageLive" class="hidden">
-        <h2 id="titleManageLive"></h2>
-        <div class="m-card">
-            <h4>สถานะปัจจุบัน</h4>
-            <p>นักศึกษาเข้าร่วม: <b id="waitCountDisplay">0</b> คน</p>
-            <p>ส่งแล้ว: <b id="finishCountDisplay">0</b> คน</p>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="btn-outline" onclick="window.changeStatus('WAITING')">พักห้องรอ</button>
-                <button class="btn-success" onclick="window.changeStatus('START')">เปิดสอบ</button>
-                <button class="btn-outline" style="color:orange; border-color:orange;" onclick="window.changeStatus('END')">ปิดระบบ (กลับหน้าแรก)</button>
-                <button class="btn-danger" onclick="window.changeStatus('FORCE_END')">ปิดสอบ (บังคับส่ง)</button>
+        <h2 id="titleManageLive" style="margin-top:0; color:var(--main); font-size: 18px;"></h2>
+        
+        <div class="admin-panel-row" style="display:flex; gap:15px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:280px;">
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px;">
+              <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 15px;"><i class="fas fa-satellite-dish"></i> สถานะห้องสอบปัจจุบัน</h4>
+              <div style="display:flex; justify-content:space-between; background:#f4f6f9; padding:12px; border-radius:8px; margin-bottom:8px;">
+                <span style="font-weight:600; color:#555; font-size: 13px;">นักศึกษาเข้าระบบ:</span>
+                <span id="waitCountDisplay" style="font-size:20px; font-weight:bold; color:var(--primary-blue);">0</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; background:#e8f8f5; padding:12px; border-radius:8px; margin-bottom:15px;">
+                <span style="font-weight:600; color:#27ae60; font-size: 13px;">ส่งข้อสอบแล้ว:</span>
+                <span id="finishCountDisplay" style="font-size:20px; font-weight:bold; color:#27ae60;">0</span>
+              </div>
+              
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <button id="btnStatWAITING" class="btn-outline" style="margin:0; padding:8px; font-size:12px;" onclick="window.changeStatus('WAITING')">พักห้องรอ</button>
+                <button id="btnStatSTART" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:#2ecc71; color:#2ecc71;" onclick="window.changeStatus('START')">เปิดสอบ</button>
+                <button id="btnStatEND" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:#e67e22; color:#e67e22;" onclick="window.changeStatus('END')">ปิดระบบ (กลับหน้าแรก)</button>
+                <button id="btnStatFORCE_END" class="btn-outline" style="margin:0; padding:8px; font-size:12px; border-color:var(--danger); color:var(--danger);" onclick="window.changeStatus('FORCE_END')">ปิดสอบ (บังคับส่ง)</button>
+              </div>
+
+              <div id="adminFreeTimerDisplay" class="hidden" style="margin-top:15px; padding:12px; background:#fff3cd; border-radius:8px; text-align:center; border: 1px solid #ffeeba;">
+                <span style="font-size:13px; color:#856404; font-weight:600;"><i class="fas fa-stopwatch"></i> เวลาถอยหลัง (อิงตามเซิร์ฟเวอร์):</span><br>
+                <span id="adminLiveTimerText" style="font-size:28px; font-weight:bold; color:var(--danger); font-family:monospace;">00:00</span>
+              </div>
             </div>
-            <div id="adminFreeTimerDisplay" class="hidden" style="margin-top:15px; text-align:center;">
-                <p>เวลาถอยหลังส่วนกลาง:</p>
-                <h1 id="adminLiveTimerText" style="color:red; font-family:monospace;">00:00</h1>
+
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px;">
+              <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:8px; font-size: 15px;"><i class="fas fa-file-download"></i> โหลดผลและวิเคราะห์</h4>
+              <button class="btn-primary" style="background:#f39c12; padding:10px;" onclick="window.loadAnalytics()"><i class="fas fa-chart-bar"></i> กราฟวิเคราะห์ผลสอบ</button>
+              <button class="btn-success" style="padding:10px;" onclick="window.exportToCSV()"><i class="fas fa-file-excel"></i> ดาวน์โหลดคะแนน (Excel)</button>
             </div>
+
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); border-top: 3px solid var(--danger);">
+              <h4 style="margin-top:0; color:var(--danger); font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> โซนจัดการระบบ</h4>
+              <button class="btn-outline" style="border-color:#34495e; color:#34495e; padding:10px;" onclick="window.duplicateSession()"><i class="fas fa-copy"></i> โคลน (คัดลอก) วิชานี้</button>
+              <button class="btn-outline" style="border-color:var(--danger); color:var(--danger); padding:10px; margin-bottom:0;" onclick="window.resetSessionData()"><i class="fas fa-trash-alt"></i> ล้างคะแนนเด็กทั้งหมด</button>
+            </div>
+          </div>
+
+          <div id="syncRemoteArea" class="hidden" style="flex:1; min-width:280px; max-height: 250px; background:#fffcf5; padding:20px; border-radius:12px; border:2px solid var(--secondary); box-shadow:0 4px 10px rgba(255, 179, 0, 0.1);">
+            <h3 style="margin-top:0; color:#d35400; text-align:center; font-size: 16px;"><i class="fas fa-bell"></i> รีโมทควบคุม (กริ๊ง)</h3>
+            <p style="text-align:center; color:#777; font-size:12px; margin-bottom: 20px;">นักศึกษาทุกคนจะไปพร้อมกัน</p>
+            
+            <div style="text-align:center; margin:20px 0;">
+              <p style="margin:0; font-weight:600; color:#555; font-size: 13px;">กำลังปล่อยโจทย์ข้อที่</p>
+              <h1 id="syncQNumDisplay" style="font-size:50px; margin:0; color:var(--main); line-height:1;">1</h1>
+              <div style="margin-top:15px; background:white; padding:10px; border-radius:8px; display:inline-block; border:1px solid #ddd;">
+                <p style="margin:0; font-size:11px; color:#888;">เวลาถอยหลัง</p>
+                <div id="teacherSyncTimer" style="font-size:26px; font-weight:bold; color:var(--danger); font-family:monospace;">00:00</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+              <button class="btn-outline" style="border-color:#d35400; color:#d35400; padding:10px; font-size:13px;" onclick="window.syncControl(-1)"><i class="fas fa-backward"></i> กลับ</button>
+              <button class="btn-main" style="background:#d35400; padding:10px; font-size:14px;" onclick="window.syncControl(1)">ข้อถัดไป <i class="fas fa-forward"></i></button>
+            </div>
+          </div>
         </div>
-        <div id="syncRemoteArea" class="m-card hidden" style="border: 2px solid var(--secondary);">
-            <h3 style="text-align:center;">รีโมทควบคุมโหมดกริ๊ง</h3>
-            <h1 id="syncQNumDisplay" style="text-align:center; font-size:40px;">1</h1>
-            <button class="btn-main" onclick="window.syncControl(1)">ถัดไป</button>
-            <button class="btn-outline" onclick="window.syncControl(-1)">กลับ</button>
-        </div>
-        <button class="btn-success" onclick="window.exportToCSV()">โหลดคะแนน (Excel)</button>
-        <button class="btn-danger" onclick="window.resetSessionData()">ล้างคะแนนทั้งหมด</button>
+
       </div>
+      
+      <div id="adminTabAnalytics" class="hidden">
+        <h2 style="margin-top:0; color:var(--main); font-size: 18px;"><i class="fas fa-chart-pie"></i> วิเคราะห์ผลการสอบ</h2>
+        <div style="background:white; padding:20px; border-radius:12px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+          <div id="itemChart" style="height:250px;"></div>
+        </div>
+        <div style="background:white; padding:20px; border-radius:12px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+          <div id="scoreChart" style="height:250px;"></div>
+        </div>
+        <button class="btn-outline" style="max-width:200px;" onclick="window.showAdminTab('manageLive')">กลับแผงควบคุม</button>
+      </div>
+
     </main>
   </div>
 
+
   <div class="container hidden" id="appContainer">
     
-    <div id="googleAuthView" class="hidden">
-        <div class="m-card" style="text-align:center; padding:40px 20px;">
-            <i class="fas fa-shield-alt" style="font-size:50px; color:var(--primary-blue); margin-bottom:20px;"></i>
-            <h3>กรุณายืนยันตัวตนก่อนเข้าสอบ</h3>
-            <p style="color:#666; margin-bottom:30px;">เพื่อป้องกันการสวมรอย กรุณาล็อกอินด้วยบัญชี Google</p>
-            <button class="btn-google" onclick="window.loginWithGoogle()">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-                ล็อกอินด้วยบัญชี Google
-            </button>
-            <button class="btn-outline" style="margin-top:15px;" onclick="window.goHome()">ย้อนกลับ</button>
-        </div>
+    <div id="studentDashboardView" class="hidden">
+      <div class="m-card" style="text-align:center; padding: 30px 15px;">
+        <i class="fas fa-pen-nib" style="font-size:50px; color:var(--main); margin-bottom:15px;"></i>
+        <h2 style="color:var(--main); margin-top:0; font-size: 18px;">ระบบทดสอบออนไลน์</h2>
+        <p style="color:#7f8c8d; margin-bottom:25px; font-size: 13px;">ยินดีต้อนรับ กรุณาเลือกเมนูเพื่อดำเนินการ</p>
+        <button class="btn-main" style="padding:15px; font-size:15px;" onclick="window.showView('studentLoginView'); window.loadActiveSessions();">เข้าสู่ห้องสอบ</button>
+        <button class="btn-outline" style="padding:15px; font-size:15px;" onclick="window.showView('studentPortalView')">ตรวจสอบผลคะแนนเก่า</button>
+      </div>
     </div>
 
     <div id="studentLoginView" class="hidden">
       <div class="m-card">
-        <h3><i class="fas fa-edit"></i> ข้อมูลนักศึกษา</h3>
-        <p id="authEmailDisplay" style="background:#eee; padding:10px; border-radius:8px; font-size:12px; color:#555;"></p>
-        <label>เลือกวิชา:</label>
-        <select id="studentSessionSelect"><option value="">กำลังโหลดวิชา...</option></select>
-        <label>รหัสนักศึกษา:</label>
-        <input type="text" id="studentId" placeholder="กรอกรหัสนักศึกษา">
-        <label>ชื่อ-นามสกุล:</label>
-        <input type="text" id="studentName" placeholder="กรอกชื่อจริง-นามสกุล">
-        <button class="btn-primary" onclick="window.studentJoinQuiz()">เข้าสู่ห้องสอบ</button>
-        <button class="btn-outline" onclick="window.logoutGoogle()">สลับบัญชี Google</button>
+        <h3 style="color:var(--main); margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; font-size: 16px;"><i class="fas fa-sign-in-alt"></i> ลงทะเบียนเข้าสอบ</h3>
+        
+        <label style="font-weight:600; font-size:13px; color:#555;">เลือกรายวิชา:</label>
+        <div style="display:flex; gap:8px;">
+          <select id="studentSessionSelect" style="margin-bottom:12px;"><option value="">กำลังโหลดวิชา...</option></select>
+          <button class="btn-outline" style="width:50px; border-color:var(--primary-blue); color:var(--primary-blue); margin-bottom:12px; padding:0; display:flex; align-items:center; justify-content:center;" onclick="window.loadActiveSessions()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
+        <label style="font-weight:600; font-size:13px; color:#555;">รหัสนักศึกษา:</label>
+        <input type="text" id="studentId" placeholder="กรอกรหัสประจำตัว">
+        <label style="font-weight:600; font-size:13px; color:#555;">ชื่อ-นามสกุล:</label>
+        <input type="text" id="studentName" placeholder="กรอกชื่อและนามสกุล">
+        <button class="btn-primary" style="margin-top:10px; padding:12px; font-size:15px;" onclick="window.studentJoinQuiz()">เข้าสู่ระบบ</button>
+        <button class="btn-outline" style="padding:12px;" onclick="window.showView('studentDashboardView')">ย้อนกลับ</button>
       </div>
     </div>
 
     <div id="quizView" class="hidden">
-      <div class="m-card" style="position:sticky; top:70px; z-index:900;">
-        <div style="display:flex; justify-content:space-between;">
-            <b id="studentIdDisplay">--</b>
-            <div id="freeTimerArea" class="hidden"><b id="globalTimer" class="timer-text-global">00:00</b></div>
+      <div class="m-card" style="padding:12px 15px; margin-bottom:10px; border-bottom: 3px solid var(--primary-blue);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:11px; color:#888; font-weight:600;">รหัสนักศึกษา:</span><br>
+            <span id="studentIdDisplay" style="font-size:14px; color:var(--main); font-weight:bold;">--</span>
+          </div>
+          <div id="freeTimerArea" class="hidden">
+            <span style="font-size:11px; color:var(--danger); font-weight:600; display:block; text-align:right;">เวลาที่เหลือ:</span>
+            <span class="timer-text-global" id="globalTimer">00:00</span>
+          </div>
         </div>
         <div id="strictTimerArea" class="hidden">
-            <h1 id="strictTimerText" style="text-align:center; color:red; margin:5px 0;">00</h1>
+          <div style="text-align:center; font-weight:600; font-size:30px; color:var(--danger); line-height:1; margin-top:5px;" id="strictTimerText">00</div>
+          <div class="timer-bar"><div id="strictTimerFill"></div></div>
         </div>
-        <div id="qNavigator" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;"></div>
+        <div id="qNavigator" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #eee;" class="hidden"></div>
       </div>
+
+      <div id="waitingSignalArea" class="m-card hidden" style="text-align:center; padding:40px 15px; background:#f4f6f9; border:2px dashed #bdc3c7;">
+        <div class="loader" style="margin: 0 auto; border-top-color:var(--primary-blue); width: 35px; height: 35px;"></div>
+        <h3 style="color:var(--main); margin-top:20px; font-size: 16px;">ส่งคำตอบข้อนี้แล้ว</h3>
+        <p style="color:#7f8c8d; font-size:13px;">กรุณารออาจารย์ส่งสัญญาณปล่อยโจทย์ข้อถัดไป...</p>
+      </div>
+
       <div id="questionContainerArea">
-        <div class="m-card">
-          <span id="qCounter" style="color:var(--primary-blue); font-weight:600;"></span>
-          <h3 id="questionText" style="margin-top:10px;"></h3>
-          <div id="optionsContainer"></div>
-          <div id="freeControls" class="hidden" style="display:flex; gap:10px;">
-            <button class="btn-outline" onclick="window.goPrevQ()">กลับ</button>
-            <button class="btn-primary" onclick="window.goNextQ()">ถัดไป</button>
-          </div>
-          <button id="confirmStrictBtn" class="btn-main hidden" onclick="window.confirmStrictAnswer()">ยืนยันคำตอบ</button>
+        <div class="m-card" style="min-height: 250px;">
+          <span id="qCounter" style="font-size:13px; color:var(--primary-blue); font-weight:bold; background:#e8f4f8; padding:4px 10px; border-radius:15px;">ข้อที่ -- / --</span>
+          <h3 id="questionText" style="margin-top:15px; color:var(--main); line-height:1.4; font-size: 15px;">กรุณารออาจารย์เริ่มสอบ...</h3>
+          <div id="optionsContainer" style="margin-top:20px;"></div>
         </div>
-        <button id="finalSubmitBtn" class="btn-danger hidden" onclick="window.submitFinalExam()">ส่งข้อสอบทั้งหมด</button>
-      </div>
-      <div id="waitingSignalArea" class="m-card hidden" style="text-align:center;">
-        <div class="loader" style="margin:0 auto;"></div>
-        <p>บันทึกคำตอบแล้ว รออาจารย์ส่งข้อถัดไป...</p>
+        <div id="freeControls" class="hidden" style="display:flex; gap:8px;">
+          <button class="btn-outline" style="padding:12px; font-size:14px;" onclick="window.goPrevQ()"><i class="fas fa-chevron-left"></i> ย้อนกลับ</button>
+          <button class="btn-primary" style="padding:12px; font-size:14px;" onclick="window.goNextQ()">ถัดไป <i class="fas fa-chevron-right"></i></button>
+        </div>
+        <button id="confirmStrictBtn" class="btn-main hidden" style="padding:14px; font-size:15px;" onclick="window.confirmStrictAnswer()">ยืนยันคำตอบข้อนี้</button>
+        <button id="finalSubmitBtn" class="btn-danger hidden" style="margin-top:15px; padding:14px; font-size:15px;" onclick="window.submitFinalExam()">ส่งข้อสอบทั้งหมด</button>
       </div>
     </div>
 
     <div id="resultView" class="hidden" style="text-align:center;">
-      <div class="m-card">
-        <i class="fas fa-check-circle" style="font-size:60px; color:var(--success);"></i>
-        <h2>ส่งข้อสอบเรียบร้อยแล้ว</h2>
-        <div id="scoreDisplayArea">
-          <p>คะแนนที่ทำได้:</p>
-          <h1 id="finalScoreDisplay" style="font-size:50px; color:var(--secondary);">--/--</h1>
+      <div class="m-card" style="padding:30px 15px;">
+        <i class="fas fa-check-circle" style="font-size:60px; color:var(--success); margin-bottom:15px;"></i>
+        <h2 style="color:var(--main); margin-top:0; font-size: 18px;">ส่งข้อสอบเรียบร้อยแล้ว</h2>
+        <div id="scoreDisplayArea" style="background:#f4f6f9; padding:15px; border-radius:12px; display:inline-block; margin-top:10px;">
+          <p style="margin:0; color:#7f8c8d; font-weight:600; font-size: 13px;">คะแนนที่ทำได้ (เฉพาะปรนัย)</p>
+          <h1 id="finalScoreDisplay" style="font-size:45px; color:var(--secondary); margin:0; line-height:1.2; text-shadow: 1px 1px 0px rgba(0,0,0,0.1);">--/--</h1>
         </div>
-        <button class="btn-main" onclick="window.goHome()">กลับหน้าหลัก</button>
+        <div id="noScoreDisplayArea" class="hidden" style="margin-top:15px;">
+          <p style="color:#555; font-size:14px;">ระบบได้บันทึกคำตอบของคุณแล้ว <br><b style="color:var(--main);">รออาจารย์ประกาศคะแนนภายหลัง</b></p>
+        </div>
+        <button class="btn-main" style="margin-top:25px; padding:12px; font-size:15px;" onclick="window.goHome()">กลับหน้าหลัก</button>
       </div>
     </div>
-    
+
+    <div id="studentPortalView" class="hidden">
+      <div class="m-card">
+        <h3 style="color:var(--main); margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; font-size: 16px;"><i class="fas fa-search"></i> ตรวจสอบผลคะแนนเก่า</h3>
+        <input type="text" id="portalId" placeholder="กรอกรหัสนักศึกษา">
+        <button class="btn-primary" style="padding:12px; font-size:14px;" onclick="window.searchPortal()">ค้นหาข้อมูล</button>
+        <div id="portalResult" style="margin-top:15px;"></div>
+        <button class="btn-outline" style="margin-top:10px; padding:12px;" onclick="window.showView('studentDashboardView')">กลับ</button>
+      </div>
+    </div>
+    <div class="developer-credit-white" style="text-align: center; margin-top: 20px; font-size: 12px; color: #999; opacity: 0.8;"><i class="fas fa-code"></i> Developed by <b>Kanpitcha</b></div>
   </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc, setDoc, onSnapshot, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-  const firebaseConfig = { 
-    apiKey: "AIzaSyC8lbyhvEplX48fvc5c8fK1eBXtUfuI1ac", 
-    authDomain: "kpcquiz-system.firebaseapp.com", 
-    projectId: "kpcquiz-system", 
-    storageBucket: "kpcquiz-system.firebasestorage.app", 
-    messagingSenderId: "405922995683", 
-    appId: "1:405922995683:web:92ffb566d2ef390d2754d6" 
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+  const firebaseConfig = { apiKey: "AIzaSyC8lbyhvEplX48fvc5c8fK1eBXtUfuI1ac", authDomain: "kpcquiz-system.firebaseapp.com", projectId: "kpcquiz-system", storageBucket: "kpcquiz-system.firebasestorage.app", messagingSenderId: "405922995683", appId: "1:405922995683:web:92ffb566d2ef390d2754d6" };
+  const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-  // ตัวแปรระบบ (เหมือนเดิม)
-  window.currentSessionID = ""; window.myStudentID = ""; window.allQuizQuestions = []; window.currentQIndex = 0; 
-  window.myAnswers = {}; window.timerInterval = null; window.isEditing = false; window.currentUserEmail = "";
+  window.currentSessionID = ""; window.myStudentID = ""; window.allQuizQuestions = []; window.currentQIndex = 0; window.myAnswers = {}; window.timerInterval = null; window.isEditing = false;
+  let adminUnsub = null; let studentUnsub = null; let syncUnsub = null;
+  window.lastSyncTime = 0; window.teacherTimerInterval = null; window.myStartTime = 0;
+  window.hasStartedExam = false; window.currentSessionData = null; window.adminSessionUnsub = null;
 
-  // ฟังก์ชัน Google Auth (เพิ่มใหม่)
-  window.loginWithGoogle = async () => {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        // ล็อกอินสำเร็จ authStateChanged จะทำงานต่อเอง
-    } catch (e) { alert("การล็อกอินล้มเหลว: " + e.message); }
-  };
+  google.charts.load('current', {'packages':['corechart', 'bar']});
 
-  window.logoutGoogle = () => signOut(auth);
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-        window.currentUserEmail = user.email;
-        document.getElementById('authEmailDisplay').innerText = "ล็อกอินโดย: " + user.email;
-        if(document.getElementById('googleAuthView').classList.contains('hidden') === false) {
-            window.showView('studentLoginView');
-            window.loadActiveSessions();
-        }
+  // Global Interval for Admin Timer
+  setInterval(() => {
+    if(window.currentSessionData && window.currentSessionData.status === 'START' && window.currentSessionData.examMode === 'FREE') {
+      let el = document.getElementById('adminFreeTimerDisplay');
+      if(el) el.classList.remove('hidden');
+      let elapsed = Math.floor((Date.now() - (window.currentSessionData.startTime || Date.now())) / 1000);
+      let rem = (window.currentSessionData.globalTime * 60) - elapsed;
+      if(rem < 0) rem = 0;
+      let m = Math.floor(rem/60), s = rem%60;
+      let txt = document.getElementById('adminLiveTimerText');
+      if(txt) txt.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     } else {
-        window.currentUserEmail = "";
-        if(document.getElementById('appContainer').classList.contains('hidden') === false && 
-           document.getElementById('adminLayoutView').classList.contains('hidden') === true) {
-            window.showView('googleAuthView');
-        }
+      let el = document.getElementById('adminFreeTimerDisplay');
+      if(el) el.classList.add('hidden');
     }
-  });
+  }, 1000);
 
-  // UI Flow (เหมือนเดิม)
+  // UI Handlers
   window.showView = (v) => { 
     document.querySelectorAll('.container > div, #loginGateView, #adminLayoutView').forEach(d => d.classList.add('hidden')); 
-    if(v === 'adminLayoutView') { document.getElementById('adminLayoutView').classList.remove('hidden'); }
-    else if (v !== 'loginGateView') { 
-        document.getElementById('mainHeader').classList.remove('hidden'); 
-        document.getElementById('appContainer').classList.remove('hidden');
-        document.getElementById(v).classList.remove('hidden'); 
-    } else { document.getElementById('loginGateView').classList.remove('hidden'); }
+    if(v === 'adminLayoutView') {
+      document.getElementById('adminLayoutView').classList.remove('hidden');
+    } else if (v !== 'loginGateView') {
+      document.getElementById('mainHeader').classList.remove('hidden'); 
+      document.getElementById('appContainer').classList.remove('hidden');
+      document.getElementById(v).classList.remove('hidden'); 
+    } else {
+      document.getElementById('loginGateView').classList.remove('hidden');
+    }
+    window.scrollTo(0,0);
   };
   
-  window.selectRole = (role) => { 
-    if(role==='student') {
-        if(window.currentUserEmail) { window.showView('studentLoginView'); window.loadActiveSessions(); }
-        else { window.showView('googleAuthView'); }
-    } else { window.showPinModal(); }
-  };
-
+  window.selectRole = (role) => { if(role==='student') window.showView('studentDashboardView'); else window.showPinModal(); };
   window.goHome = () => location.reload();
   window.showPinModal = () => document.getElementById('pinModal').classList.remove('hidden');
   window.closePinModal = () => document.getElementById('pinModal').classList.add('hidden');
   window.verifyAdmin = () => { if(document.getElementById('adminPinInput').value === "1234") { window.closePinModal(); window.showView('adminLayoutView'); window.showAdminTab('dashboard'); window.loadDashboardStats(); } else alert("PIN ผิด"); };
 
-  // ระบบอาจารย์ (คงเดิมทุกอย่าง)
+  // Admin Sidebar Nav Logic
+  window.showAdminTab = (tabName) => {
+    ['Dashboard', 'Create', 'ManageQ', 'ManageLive', 'Analytics'].forEach(t => {
+       document.getElementById('adminTab' + t).classList.add('hidden');
+    });
+    document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+    
+    document.getElementById('adminTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+    if(document.getElementById('menu' + tabName.charAt(0).toUpperCase() + tabName.slice(1))) {
+       document.getElementById('menu' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    }
+    
+    if(tabName.startsWith('manage') || tabName === 'analytics') {
+      document.getElementById('manageMenus').classList.remove('hidden');
+    } else {
+      document.getElementById('manageMenus').classList.add('hidden');
+    }
+  };
+
+  window.goAdminHome = () => { window.showAdminTab('dashboard'); window.loadDashboardStats(); };
+
+  // Admin Dashboard Logic
   window.loadDashboardStats = async () => {
-    const sSnap = await getDocs(collection(db, "sessions"));
-    let h = ""; sSnap.forEach(s => {
-      let d = s.data();
-      h += `<div class="folder-card" onclick="window.manageSession('${s.id}','${d.name}','${d.status}')">
-              <div class="folder-icon"><i class="fas fa-folder"></i></div>
-              <b>${d.name}</b><br><small>สถานะ: ${d.status}</small>
-              <button class="btn-danger btn-mini" style="margin-top:10px;" onclick="event.stopPropagation(); window.deleteSessionData('${s.id}')">ลบ</button>
+    const sSnap = await getDocs(collection(db, "sessions")); const scSnap = await getDocs(collection(db, "scores"));
+    document.getElementById('statSessions').innerText = sSnap.size; document.getElementById('statStudents').innerText = scSnap.size;
+    let ss = []; sSnap.forEach(d => ss.push({id:d.id, ...d.data()})); ss.sort((a,b)=>b.createdAt - a.createdAt);
+    let h = ""; ss.forEach(s => {
+      let iconColor = s.status==='START'?'#2ecc71':( (s.status==='END' || s.status==='FORCE_END') ?'#e74c3c':'#3498db');
+      h += `<div class="folder-card" onclick="window.manageSession('${s.id}','${s.name}','${s.status}')">
+              <div class="folder-icon" style="color:${iconColor}; background:${iconColor}20;"><i class="fas fa-folder"></i></div>
+              <h3 style="margin:0 0 5px 0; color:var(--main); font-size:16px;">${s.name}</h3>
+              <p style="margin:0; font-size:13px; color:#777;">สถานะ: <b style="color:${iconColor}">${s.status}</b></p>
+              <button class="btn-danger btn-mini" style="margin-top:12px;" onclick="event.stopPropagation(); window.deleteSessionData('${s.id}')">ลบวิชา</button>
             </div>`;
     });
-    document.getElementById('sessionListGrid').innerHTML = h || "ยังไม่มีวิชา";
+    document.getElementById('sessionListGrid').innerHTML = h || "<p style='grid-column: 1/-1; text-align:center; color:#999;'>ยังไม่มีข้อมูลวิชา</p>";
+  };
+
+  window.createSession = async () => {
+    let n = document.getElementById('newSessionName').value; if(!n) return alert('กรุณาตั้งชื่อวิชา');
+    document.getElementById('overlay').classList.remove('hidden');
+    let ref = await addDoc(collection(db, "sessions"), { name: n, status: "WAITING", examMode: "FREE", globalTime: 60, showScore: true, randomize: true, randomizeQ: false, syncQNum: 1, syncTriggerTime: Date.now(), createdAt: Date.now() });
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('newSessionName').value = "";
+    window.manageSession(ref.id, n, "WAITING");
+  };
+
+  window.deleteSessionData = async (id) => {
+    if(!confirm("ยืนยันการลบแบบทดสอบนี้ใช่หรือไม่?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    let qs = await getDocs(query(collection(db, "questions"), where("sessionID", "==", id))); qs.forEach(d => deleteDoc(d.ref));
+    let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", id))); sc.forEach(d => deleteDoc(d.ref));
+    let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", id))); rs.forEach(d => deleteDoc(d.ref));
+    await deleteDoc(doc(db, "sessions", id));
+    document.getElementById('overlay').classList.add('hidden');
+    window.loadDashboardStats();
+  };
+
+  window.resetSessionData = async () => {
+    if(!confirm("⚠️ ยืนยันการล้างข้อมูลคะแนนเด็กทั้งหมดใช่หรือไม่?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    try {
+      let sc = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID))); sc.forEach(d => deleteDoc(d.ref));
+      let rs = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID))); rs.forEach(d => deleteDoc(d.ref));
+      alert("ล้างข้อมูลคะแนนเรียบร้อยแล้ว");
+    } catch(e) {} document.getElementById('overlay').classList.add('hidden');
   };
 
   window.manageSession = async (id, name, status) => {
-    window.currentSessionID = id;
+    window.currentSessionID = id; 
     document.getElementById('titleManageQ').innerText = name;
     document.getElementById('titleManageLive').innerText = name;
-    let sDoc = await getDoc(doc(db, "sessions", id)); let sd = sDoc.data();
-    document.getElementById('examModeSelect').value = sd.examMode || "FREE";
-    document.getElementById('globalTimeInput').value = sd.globalTime || 60;
-    document.getElementById('showScoreCheck').checked = sd.showScore !== false;
-    document.getElementById('randomizeCheck').checked = sd.randomize !== false;
-    document.getElementById('randomizeQCheck').checked = sd.randomizeQ === true;
+
+    let sDoc = await getDoc(doc(db, "sessions", id)); let sData = sDoc.data();
+    document.getElementById('examModeSelect').value = sData.examMode || "FREE";
+    document.getElementById('globalTimeInput').value = sData.globalTime || 60;
+    document.getElementById('showScoreCheck').checked = sData.showScore !== false;
+    document.getElementById('randomizeCheck').checked = sData.randomize !== false;
+    document.getElementById('randomizeQCheck').checked = sData.randomizeQ === true;
+    document.getElementById('syncQNumDisplay').innerText = sData.syncQNum || 1;
+    
+    window.toggleExamModeSetup(); window.loadQuestions(); window.updateStatusUI(status);
     window.showAdminTab('manageLive');
-    window.loadQuestions(); window.updateStatusUI(status);
+    
+    if(adminUnsub) adminUnsub();
+    adminUnsub = onSnapshot(query(collection(db, "scores"), where("sessionID", "==", id)), (snap) => {
+      let wait = 0, done = 0; snap.forEach(d => { if(d.data().status==='DONE') done++; else wait++; });
+      document.getElementById('waitCountDisplay').innerText = wait + done; document.getElementById('finishCountDisplay').innerText = done;
+    });
+
+    if(window.adminSessionUnsub) window.adminSessionUnsub();
+    window.adminSessionUnsub = onSnapshot(doc(db, "sessions", id), (snap) => {
+      window.currentSessionData = snap.data();
+    });
+  };
+
+  window.toggleExamModeSetup = () => {
+    let m = document.getElementById('examModeSelect').value;
+    document.getElementById('globalTimeSetup').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('syncRemoteArea').classList.toggle('hidden', m !== 'SYNC');
   };
 
   window.saveSessionSettings = async () => {
@@ -363,95 +601,466 @@
     }); 
   };
 
-  // ระบบสอบ (คงเดิม)
-  window.studentJoinQuiz = async () => {
-    let sid = document.getElementById('studentId').value;
-    let sname = document.getElementById('studentName').value;
-    window.currentSessionID = document.getElementById('studentSessionSelect').value;
-    if(!window.currentSessionID || !sid || !sname) return alert("กรุณากรอกข้อมูลให้ครบ");
-    window.myStudentID = sid;
-    
-    document.getElementById('overlay').classList.remove('hidden');
-    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + sid);
-    let sDoc = await getDoc(scoreRef);
-    if(sDoc.exists() && sDoc.data().status === "DONE") {
-        document.getElementById('overlay').classList.add('hidden');
-        return alert("คุณส่งข้อสอบวิชานี้ไปแล้ว");
-    }
-    
-    await setDoc(scoreRef, { 
-        sessionID: window.currentSessionID, 
-        studentID: sid, 
-        studentName: sname, 
-        email: window.currentUserEmail, // เพิ่มเมลลงในคะแนน
-        status: "WAITING", 
-        score: 0, 
-        startedAt: Date.now() 
-    });
-    
-    document.getElementById('overlay').classList.add('hidden');
-    window.showView('quizView');
-    document.getElementById('studentIdDisplay').innerText = sid + " (" + sname + ")";
-    
-    onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => {
-        let sd = snap.data();
-        if(sd.status==='START' && !window.examStarted) window.startExam(sd);
-        if(sd.status==='END') window.goHome();
-        if(sd.status==='FORCE_END') window.submitFinalExam(true);
-    });
+  window.changeStatus = async (s) => { 
+    let updateData = { status: s };
+    if (s === 'START') updateData.startTime = Date.now();
+    await updateDoc(doc(db, "sessions", window.currentSessionID), updateData); 
+    window.updateStatusUI(s); 
   };
-
-  // ระบบสลับข้อ สลับช้อยส์ (คงเดิม)
-  window.startExam = async (sData) => {
-    window.examStarted = true;
-    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
-    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push({...d.data(), id: d.id}));
-    window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
-    if(sData.randomizeQ && sData.examMode !== 'SYNC') window.allQuizQuestions.sort(()=>Math.random()-0.5);
-    window.renderQuiz();
-  };
-
-  // ดึงฟังก์ชันที่เหลือจากเวอร์ชันก่อนหน้า (Bulk import, Delete, CSV export, Sync, Timer) 
-  // ใส่กลับมาทั้งหมดเพื่อความสมบูรณ์
   
-  window.showAdminTab = (t) => {
-    document.querySelectorAll('[id^="adminTab"]').forEach(div => div.classList.add('hidden'));
-    document.getElementById('adminTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden');
-    document.getElementById('manageMenus').classList.toggle('hidden', !t.startsWith('manage'));
+  window.updateStatusUI = (st) => { 
+    document.querySelectorAll('[id^="btnStat"]').forEach(b => { b.style.background="white"; b.style.color="var(--main)"; });
+    let active = document.getElementById('btnStat'+st); 
+    if(active) { active.style.background= active.style.borderColor; active.style.color="white"; if(st==='WAITING') active.style.background="var(--main)"; }
   };
 
-  window.updateStatusUI = (st) => {
-    document.querySelectorAll('[id^="btnStat"]').forEach(b => b.style.opacity = "0.5");
-    if(document.getElementById('btnStat'+st)) document.getElementById('btnStat'+st).style.opacity = "1";
+  window.syncControl = async (dir) => {
+    let cur = parseInt(document.getElementById('syncQNumDisplay').innerText);
+    let next = Math.max(1, cur + dir);
+    if (next > window.allQuizQuestions.length) { next = window.allQuizQuestions.length; alert("ข้อสุดท้ายแล้วครับ"); }
+    
+    document.getElementById('syncQNumDisplay').innerText = next;
+    let t = Date.now();
+    await updateDoc(doc(db, "sessions", window.currentSessionID), { syncQNum: next, syncTriggerTime: t });
+    
+    let q = window.allQuizQuestions[next - 1];
+    if(q) window.startTeacherTimer(q.time);
   };
 
-  window.changeStatus = async (s) => {
-    await updateDoc(doc(db, "sessions", window.currentSessionID), { status: s, startTime: Date.now() });
-    window.updateStatusUI(s);
+  window.startTeacherTimer = (sec) => {
+    clearInterval(window.teacherTimerInterval);
+    let display = document.getElementById('teacherSyncTimer');
+    let format = (s) => { let m=Math.floor(s/60), rs=s%60; return `${m.toString().padStart(2,'0')}:${rs.toString().padStart(2,'0')}`; };
+    display.innerText = format(sec);
+    window.teacherTimerInterval = setInterval(() => {
+        sec--;
+        if(sec >= 0) display.innerText = format(sec);
+        else { clearInterval(window.teacherTimerInterval); display.innerText = "หมดเวลา"; }
+    }, 1000);
+  };
+
+  // Question Management & Bulk Import
+  window.loadQuestions = async () => {
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push({id:d.id, ...d.data()}));
+    window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
+    let fs = document.getElementById('qFilterSelect'); fs.innerHTML = '<option value="ALL">ดูทั้งหมด</option>';
+    window.allQuizQuestions.forEach(q => fs.innerHTML += `<option value="${q.qNum}">ข้อที่ ${q.qNum}</option>`);
+    window.renderQuestionList();
+  };
+
+  window.renderQuestionList = () => {
+    let f = document.getElementById('qFilterSelect').value; let h = "";
+    window.allQuizQuestions.forEach(q => {
+      if(f !== 'ALL' && q.qNum != f) return;
+      let ansTxt = q.type==='TEXT'?'อัตนัย (รอตรวจ)':(q.options[q.ans-1] || 'ยังไม่เฉลย');
+      let color = (q.type==='CHOICE' && q.ans === 0) ? 'color:var(--danger)' : 'color:var(--success)';
+      let m = Math.floor(q.time/60), s = q.time%60; let tTxt = (m>0?m+" นาที ":"") + s + " วิ";
+      h += `<div class="list-item" style="align-items:flex-start;">
+              <span><b style="font-size:14px;">${q.qNum}. ${q.question}</b><br><small style="${color}; font-weight:600;">เฉลย: ${ansTxt} | ⏱️ ${tTxt}</small></span>
+              <div style="display:flex; gap:5px; margin-top:5px;"><button class="btn-outline btn-mini" onclick="window.prepareEdit('${q.id}')"><i class="fas fa-edit"></i></button><button class="btn-danger btn-mini" onclick="window.delQ('${q.id}')"><i class="fas fa-trash"></i></button></div>
+            </div>`;
+    });
+    document.getElementById('existingQuestionsList').innerHTML = h || "<p style='text-align:center; color:#999;'>ยังไม่มีโจทย์ในระบบ</p>";
+  };
+
+  window.handleBulkImport = async () => {
+    let text = document.getElementById('bulkInputArea').value; if(!text.trim()) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    let blocks = text.split(/\n(?=\d+[\.\)])/).filter(b => b.trim());
+    const batch = writeBatch(db);
+    let startNum = window.allQuizQuestions.length + 1;
+    blocks.forEach((block, idx) => {
+        let lines = block.split('\n').map(l => l.trim()).filter(l => l);
+        let qText = lines[0].replace(/^\d+[\.\)]\s*/, '');
+        let options = [];
+        lines.slice(1).forEach(line => {
+            if(line.match(/^[ก-ฮa-zA-Z][\.\)]/)) options.push(line.replace(/^[ก-ฮa-zA-Z][\.\)]\s*/, ''));
+        });
+        while(options.length < 2) options.push("");
+        let qRef = doc(collection(db, "questions"));
+        batch.set(qRef, { sessionID: window.currentSessionID, qNum: startNum + idx, type: "CHOICE", question: qText, options: options, ans: 0, time: 30 });
+    });
+    await batch.commit();
+    document.getElementById('bulkInputArea').value = ""; document.getElementById('overlay').classList.add('hidden');
+    alert("นำเข้าข้อสอบเรียบร้อยแล้ว กรุณาเลือกเฉลยให้แต่ละข้อด้วยนะครับ"); window.loadQuestions();
+  };
+
+  window.toggleQType = () => { document.getElementById('choiceSetupArea').classList.toggle('hidden', document.getElementById('qType').value==='TEXT'); };
+
+  window.addOptionField = (v="") => {
+    let d = document.createElement("div"); d.style="display:flex; gap:5px; margin-bottom:8px;";
+    d.innerHTML = `<input type="text" class="qOptInput" value="${v}" style="margin:0;"><button class="btn-danger btn-mini" style="width:40px; border-radius:8px;" onclick="this.parentElement.remove(); window.updateAnsDrop();"><i class="fas fa-times"></i></button>`;
+    document.getElementById("dynamicOptionsContainer").appendChild(d); window.updateAnsDrop();
+  };
+  window.updateAnsDrop = () => {
+    let s = document.getElementById("qAns"); s.innerHTML = '<option value="0">-- เลือกลำดับข้อที่ถูก --</option>';
+    document.querySelectorAll(".qOptInput").forEach((_,i) => s.innerHTML += `<option value="${i+1}">ตัวเลือกที่ ${i+1}</option>`);
+  };
+
+  window.handleQuestionSubmit = async () => {
+    let type = document.getElementById('qType').value; let os = []; document.querySelectorAll('.qOptInput').forEach(i => os.push(i.value));
+    let data = { sessionID: window.currentSessionID, type, question: document.getElementById('qText').value, options: os, ans: parseInt(document.getElementById('qAns').value)||0, time: (parseInt(document.getElementById('qMin').value)*60)+parseInt(document.getElementById('qSec').value) };
+    document.getElementById('overlay').classList.remove('hidden');
+    if(window.isEditing) await updateDoc(doc(db, "questions", document.getElementById('editRowId').value), data);
+    else { data.qNum = window.allQuizQuestions.length + 1; await addDoc(collection(db, "questions"), data); }
+    window.isEditing = false; document.getElementById('overlay').classList.add('hidden'); window.loadQuestions(); window.resetQForm();
+  };
+
+  window.prepareEdit = (id) => {
+    let q = window.allQuizQuestions.find(i => i.id == id); window.isEditing = true;
+    document.getElementById('editRowId').value = id; document.getElementById('qType').value = q.type; window.toggleQType();
+    document.getElementById('qText').value = q.question; document.getElementById('dynamicOptionsContainer').innerHTML = "";
+    if(q.type !== 'TEXT') q.options.forEach(o => window.addOptionField(o)); document.getElementById('qAns').value = q.ans;
+    document.getElementById('qMin').value = Math.floor(q.time/60); document.getElementById('qSec').value = q.time%60;
+    document.getElementById('btnCancelEdit').classList.remove('hidden'); window.scrollTo(0, document.getElementById('qFormTitle').offsetTop - 100);
+  };
+  window.resetQForm = () => { 
+    window.isEditing = false; document.getElementById('qText').value=""; document.getElementById('dynamicOptionsContainer').innerHTML=""; 
+    [1,2,3,4].forEach(()=>window.addOptionField()); document.getElementById('btnCancelEdit').classList.add('hidden'); 
+  };
+  
+  // Resequence Questions when one is deleted
+  window.delQ = async (id) => { 
+    if(!confirm("ลบข้อนี้?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    await deleteDoc(doc(db, "questions", id)); 
+    
+    // ดึงโจทย์ที่เหลือมาเรียงลำดับใหม่
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    let qs = []; 
+    qSnap.forEach(d => qs.push({id: d.id, ...d.data()}));
+    qs.sort((a,b) => a.qNum - b.qNum);
+    
+    const batch = writeBatch(db);
+    qs.forEach((q, idx) => {
+        if (q.qNum !== idx + 1) {
+            batch.update(doc(db, "questions", q.id), { qNum: idx + 1 });
+        }
+    });
+    await batch.commit();
+    document.getElementById('overlay').classList.add('hidden');
+    window.loadQuestions(); 
+  };
+
+  window.duplicateSession = async () => {
+    if(!confirm("ยืนยันการคัดลอกวิชานี้ไปสร้างเป็นห้องใหม่?")) return;
+    document.getElementById('overlay').classList.remove('hidden');
+    let sDoc = await getDoc(doc(db, "sessions", window.currentSessionID));
+    let newData = {...sDoc.data(), name: sDoc.data().name + " (Copy)", createdAt: Date.now(), status: "WAITING", syncQNum:1, syncTriggerTime:Date.now()};
+    let newRef = await addDoc(collection(db, "sessions"), newData);
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    const batch = writeBatch(db);
+    qSnap.forEach(q => { let qRef = doc(collection(db, "questions")); batch.set(qRef, {...q.data(), sessionID: newRef.id}); });
+    await batch.commit(); document.getElementById('overlay').classList.add('hidden'); alert("โคลนวิชาเรียบร้อยแล้ว"); window.goAdminHome();
+  };
+
+  window.loadAnalytics = async () => {
+    window.showAdminTab('analytics'); document.getElementById('overlay').classList.remove('hidden');
+    let itemA = {}; let sList = []; window.allQuizQuestions.forEach(q => itemA[q.qNum] = 0);
+    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
+    rSnap.forEach(r => { let d=r.data(); if(d.result==="WRONG") itemA[d.qNum] = (itemA[d.qNum]||0)+1; });
+    let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID), where("status", "==", "DONE")));
+    scSnap.forEach(s => sList.push(s.data().score)); document.getElementById('overlay').classList.add('hidden');
+    let d1 = [['ข้อ', 'คนตอบผิด']]; for(let q in itemA) d1.push(["ข้อ "+q, itemA[q]]); new google.visualization.ColumnChart(document.getElementById('itemChart')).draw(google.visualization.arrayToDataTable(d1), {title:'วิเคราะห์คนตอบผิด', colors: ['#e74c3c']});
+    let freq = {}; for(let i=0; i<=window.allQuizQuestions.length; i++) freq[i]=0; sList.forEach(s => freq[s]++);
+    let d2 = [['คะแนน', 'คน']]; for(let s in freq) d2.push([s+" คะแนน", freq[s]]); new google.visualization.AreaChart(document.getElementById('scoreChart')).draw(google.visualization.arrayToDataTable(d2), {title:'กระจายคะแนน', colors: ['#3498db']});
   };
 
   window.exportToCSV = async () => {
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    let txtQs = []; qSnap.forEach(d => { if(d.data().type==='TEXT') txtQs.push(d.data().qNum); }); txtQs.sort((a,b)=>a-b);
     let scSnap = await getDocs(query(collection(db, "scores"), where("sessionID", "==", window.currentSessionID)));
-    let csv = "\uFEFFอีเมล,รหัสนักศึกษา,ชื่อ,คะแนน\n";
+    let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID)));
+    let rMap = {}; rSnap.forEach(r => { let d=r.data(); if(d.type==='TEXT') rMap[`${d.studentID}_${d.qNum}`] = d.textAnswer; });
+
+    let csv = "\uFEFFรหัสนักศึกษา,ชื่อ,คะแนนช้อยส์,สลับหน้าจอ(ครั้ง),สถานะ,เวลาที่ส่ง";
+    txtQs.forEach(q => csv += `,ข้อเขียน ${q}`); csv += "\n";
     scSnap.forEach(doc => {
-        let d = doc.data();
-        csv += `${d.email},${d.studentID},${d.studentName},${d.score}\n`;
+      let d = doc.data();
+      csv += `"${d.studentID}","${d.studentName}","${d.score}","${d.tabSwitches || 0}","${d.status}","${d.submittedTimeStr || '-'}"`;
+      txtQs.forEach(q => csv += `,"${(rMap[`${d.studentID}_${q}`]||'').replace(/"/g,'""')}"`); csv += "\n";
     });
-    let blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    let blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     let link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-    link.download = "คะแนน.csv"; link.click();
+    link.download = `คะแนน_${document.getElementById('titleManageLive').innerText}.csv`; link.click();
   };
 
-  // ฟังก์ชันอื่นๆ (renderQuiz, Timer, SyncControl) ให้คงเดิมจากโค้ดชุดล่าสุดของอาจารย์ครับ
-  // เนื่องจากพื้นที่จำกัด ผมได้รวมแกนหลักที่เปลี่ยนเรื่อง Auth ไว้ให้แล้ว
-  // อาจารย์สามารถนำฟังก์ชันย่อยๆ จากไฟล์เดิมมาวางต่อได้เลยครับ ทุกอย่างรองรับกันครับ
+  // Student Engine
+  let tabSwitchCount = 0;
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === 'hidden' && window.myStudentID && window.currentSessionID) {
+      tabSwitchCount++; await updateDoc(doc(db, "scores", window.currentSessionID + "_" + window.myStudentID), { tabSwitches: tabSwitchCount });
+    }
+  });
 
   window.loadActiveSessions = async () => {
-    let snap = await getDocs(collection(db, "sessions"));
-    let s = document.getElementById('studentSessionSelect');
-    s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
+    let snap = await getDocs(collection(db, "sessions")); let s = document.getElementById('studentSessionSelect'); s.innerHTML = '<option value="">-- เลือกวิชา --</option>';
     snap.forEach(d => { if(d.data().status !== 'END' && d.data().status !== 'FORCE_END') s.innerHTML += `<option value="${d.id}">${d.data().name}</option>`; });
   };
+
+  window.studentJoinQuiz = async () => {
+    window.currentSessionID = document.getElementById('studentSessionSelect').value;
+    window.myStudentID = document.getElementById('studentId').value;
+    if(!window.currentSessionID || !window.myStudentID) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    
+    document.getElementById('overlay').classList.remove('hidden');
+    let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID); let sDoc = await getDoc(scoreRef);
+    if(sDoc.exists() && sDoc.data().status === "DONE") { document.getElementById('overlay').classList.add('hidden'); return alert("คุณส่งข้อสอบวิชานี้ไปแล้ว"); }
+
+    window.myAnswers = {}; window.shuffledIndices = {}; 
+    if(sDoc.exists()) {
+      window.myStartTime = sDoc.data().startedAt || Date.now();
+      let rSnap = await getDocs(query(collection(db, "responses"), where("sessionID", "==", window.currentSessionID), where("studentID", "==", window.myStudentID)));
+      rSnap.forEach(r => { let d = r.data(); window.myAnswers[d.qNum] = d.type === "TEXT" ? d.textAnswer : d.ans; });
+      let localDraft = localStorage.getItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`);
+      if(localDraft) window.myAnswers = { ...window.myAnswers, ...JSON.parse(localDraft) };
+    } else {
+      window.myStartTime = Date.now();
+      await setDoc(scoreRef, { sessionID: window.currentSessionID, studentID: window.myStudentID, studentName: document.getElementById('studentName').value, score: 0, status: "WAITING", tabSwitches: 0, startedAt: window.myStartTime });
+    }
+    document.getElementById('overlay').classList.add('hidden'); window.showView('quizView');
+
+    if(studentUnsub) studentUnsub();
+    studentUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => { 
+      let sd = snap.data();
+      if(sd.status==='START' && !window.hasStartedExam) {
+         window.hasStartedExam = true;
+         window.startExam(sd); 
+      } 
+      else if(sd.status==='END') {
+         window.goHome(); // ปิดระบบแบบเดิม (ไม่บังคับส่ง) กลับหน้าแรก
+      }
+      else if(sd.status==='FORCE_END') {
+         if (!document.getElementById('quizView').classList.contains('hidden') || !document.getElementById('waitingSignalArea').classList.contains('hidden')) {
+             alert("หมดเวลา! อาจารย์ได้ทำการบังคับปิดสอบ ระบบจะส่งคำตอบของคุณอัตโนมัติ");
+             window.submitFinalExam(true);
+         } else if (document.getElementById('resultView').classList.contains('hidden')) {
+             window.goHome();
+         }
+      }
+    });
+  };
+
+  window.startExam = async (sData) => {
+    window.studentSessionData = sData;
+    let qSnap = await getDocs(query(collection(db, "questions"), where("sessionID", "==", window.currentSessionID)));
+    window.allQuizQuestions = []; qSnap.forEach(d => window.allQuizQuestions.push(d.data()));
+    window.allQuizQuestions.sort((a,b)=>a.qNum - b.qNum);
+    document.getElementById("studentIdDisplay").innerText = window.myStudentID;
+
+    // Shuffle questions if RandomizeQ is enabled and NOT in SYNC mode
+    if (sData.randomizeQ && sData.examMode !== 'SYNC') {
+       window.allQuizQuestions.sort(() => Math.random() - 0.5);
+    }
+    
+    if(sData.examMode === "SYNC") {
+      if(syncUnsub) syncUnsub();
+      syncUnsub = onSnapshot(doc(db, "sessions", window.currentSessionID), (snap) => {
+        let data = snap.data();
+        let qIdx = (data.syncQNum || 1) - 1;
+        if(qIdx !== window.currentQIndex || data.syncTriggerTime !== window.lastSyncTime || !window.hasStartedSync) {
+          window.currentQIndex = qIdx; window.lastSyncTime = data.syncTriggerTime; window.hasStartedSync = true;
+          document.getElementById('waitingSignalArea').classList.add('hidden');
+          document.getElementById('questionContainerArea').classList.remove('hidden');
+          
+          window.userStrictChoice = null; 
+          window.renderQuiz();
+        }
+      });
+    } else {
+      if(sData.examMode === "FREE") {
+         let startTime = sData.startTime || window.myStartTime;
+         let elapsed = Math.floor((Date.now() - startTime) / 1000);
+         let remaining = (sData.globalTime * 60) - elapsed;
+         window.startFreeTimer(remaining > 0 ? remaining : 0);
+      } else {
+         window.startInternalTimer(window.allQuizQuestions[0].time, sData.examMode);
+      }
+      window.renderQuiz();
+    }
+  };
+
+  window.renderQuiz = () => {
+    let sData = window.studentSessionData;
+    let q = window.allQuizQuestions[window.currentQIndex]; if(!q) return;
+    
+    // Mask original qNum with sequential index
+    document.getElementById("qCounter").innerText = `ข้อที่ ${window.currentQIndex + 1} / ${window.allQuizQuestions.length}`;
+    document.getElementById("questionText").innerText = q.question;
+    let box = document.getElementById("optionsContainer"); box.innerHTML = "";
+    
+    if(q.type==='TEXT') {
+      box.innerHTML = `<textarea id="essayAns" rows="6" oninput="window.saveAns(this.value)" placeholder="พิมพ์คำตอบของคุณที่นี่...">${window.myAnswers[q.qNum]||''}</textarea>`;
+    } else {
+      if(!window.shuffledIndices[q.qNum]) {
+         let indices = q.options.map((_, i) => i);
+         if(sData.randomize !== false) indices.sort(() => Math.random() - 0.5);
+         window.shuffledIndices[q.qNum] = indices;
+      }
+      
+      window.shuffledIndices[q.qNum].forEach(idx => {
+        if(!q.options[idx]) return;
+        let b = document.createElement("button"); 
+        b.className = `opt-btn ${window.myAnswers[q.qNum]===idx+1 ? 'selected' : ''}`;
+        b.innerText = q.options[idx]; 
+        b.onclick = () => { 
+            window.userStrictChoice = idx+1; 
+            window.saveAns(idx+1); 
+            document.querySelectorAll('#optionsContainer .opt-btn').forEach(btn => btn.classList.remove('selected'));
+            b.classList.add('selected');
+        };
+        box.appendChild(b);
+      });
+    }
+
+    let m = sData.examMode;
+    document.getElementById('qNavigator').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('freeControls').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('finalSubmitBtn').classList.toggle('hidden', m !== 'FREE');
+    document.getElementById('confirmStrictBtn').classList.toggle('hidden', m === 'FREE');
+    if(m === 'FREE') window.renderNav();
+    if(m === 'STRICT' || m === 'SYNC') window.startInternalTimer(q.time, m);
+  };
+
+  window.saveAns = (a) => {
+    let qNum = window.allQuizQuestions[window.currentQIndex].qNum; window.myAnswers[qNum] = a;
+    localStorage.setItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`, JSON.stringify(window.myAnswers));
+    if(document.getElementById('examModeSelect').value === 'FREE') window.renderNav();
+  };
+
+  window.startFreeTimer = (sec) => {
+    document.getElementById('freeTimerArea').classList.remove('hidden');
+    clearInterval(window.timerInterval);
+    window.timerInterval = setInterval(() => {
+      sec--; let m=Math.floor(sec/60), s=sec%60; document.getElementById("globalTimer").innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      if(sec<=0) { clearInterval(window.timerInterval); window.submitFinalExam(true); }
+    }, 1000);
+  };
+
+  window.startInternalTimer = (sec, mode) => {
+    clearInterval(window.timerInterval);
+    document.getElementById('strictTimerArea').classList.remove('hidden');
+    let total = sec;
+    document.getElementById("strictTimerText").innerText = sec;
+    window.timerInterval = setInterval(() => {
+      sec--; 
+      document.getElementById("strictTimerText").innerText = sec;
+      document.getElementById("strictTimerFill").style.width = (sec/total*100) + "%";
+      if(sec<=0) { 
+        clearInterval(window.timerInterval); 
+        let q = window.allQuizQuestions[window.currentQIndex];
+        let val = (q.type==='TEXT') ? (document.getElementById('essayAns') ? document.getElementById('essayAns').value : "") : (window.userStrictChoice || 0);
+        window.handleStepNext(val, mode);
+      }
+    }, 1000);
+  };
+
+  window.confirmStrictAnswer = () => {
+    let q = window.allQuizQuestions[window.currentQIndex];
+    let val = (q.type==='TEXT') ? (document.getElementById('essayAns').value) : (window.userStrictChoice);
+    if(!val && q.type==='TEXT') return alert("กรุณาพิมพ์คำตอบก่อนยืนยัน");
+    if(!val && q.type==='CHOICE') return alert("กรุณาเลือกคำตอบก่อนยืนยัน");
+    window.handleStepNext(val, window.allQuizQuestions[0].time ? (window.hasStartedSync ? 'SYNC' : 'STRICT') : 'STRICT'); 
+  };
+
+  window.handleStepNext = async (val, mode) => {
+    clearInterval(window.timerInterval);
+    let m = mode; if(window.hasStartedSync) m = 'SYNC'; 
+    
+    let q = window.allQuizQuestions[window.currentQIndex];
+    let isCorrect = (q.type==='CHOICE' && val === q.ans);
+    await addDoc(collection(db, "responses"), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type, ans: val, textAnswer: q.type==='TEXT'?val:'', result: isCorrect?'RIGHT':'WRONG' });
+    
+    let isLast = (window.currentQIndex >= window.allQuizQuestions.length - 1);
+    if(isCorrect) {
+      let scRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      let sDoc = await getDoc(scRef);
+      await updateDoc(scRef, { score: (sDoc.data().score || 0) + 1 });
+    }
+
+    if(isLast) window.submitFinalExam(true);
+    else {
+      if(m === 'SYNC') {
+        document.getElementById('waitingSignalArea').classList.remove('hidden');
+        document.getElementById('questionContainerArea').classList.add('hidden');
+      } else {
+        window.currentQIndex++; window.renderQuiz(); 
+      }
+    }
+  };
+
+  window.submitFinalExam = async (isAuto = false) => {
+    if(!isAuto && !confirm("ยืนยันการส่งข้อสอบทั้งหมด?")) return;
+    clearInterval(window.timerInterval); if(syncUnsub) syncUnsub();
+    document.getElementById('overlay').classList.remove('hidden');
+    
+    let sSnap = await getDoc(doc(db, "sessions", window.currentSessionID));
+    let showScore = sSnap.data().showScore !== false;
+
+    if(sSnap.data().examMode === 'FREE') {
+      const batch = writeBatch(db); let score = 0;
+      window.allQuizQuestions.forEach(q => {
+        let ans = window.myAnswers[q.qNum];
+        if (ans === undefined) ans = (q.type === 'CHOICE') ? 0 : "";
+        let ok = (q.type==='CHOICE' && ans === q.ans); if(ok) score++;
+        batch.set(doc(collection(db, "responses")), { sessionID: window.currentSessionID, studentID: window.myStudentID, qNum: q.qNum, type: q.type, ans: q.type==='CHOICE'?ans:0, textAnswer: q.type==='TEXT'?ans:'', result: q.type==='TEXT'?'MANUAL':(ok?'RIGHT':'WRONG') });
+      });
+      let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      batch.update(scoreRef, { score, status: "DONE", submittedTimeStr: new Date().toLocaleString('th-TH') });
+      await batch.commit();
+      document.getElementById("finalScoreDisplay").innerText = score + " / " + window.allQuizQuestions.filter(x=>x.type==='CHOICE').length;
+    } else {
+      let scoreRef = doc(db, "scores", window.currentSessionID + "_" + window.myStudentID);
+      let sDoc = await getDoc(scoreRef);
+      await updateDoc(scoreRef, { status: "DONE", submittedTimeStr: new Date().toLocaleString('th-TH') });
+      document.getElementById("finalScoreDisplay").innerText = (sDoc.data().score || 0) + " / " + window.allQuizQuestions.filter(x=>x.type==='CHOICE').length;
+    }
+
+    localStorage.removeItem(`quiz_draft_${window.currentSessionID}_${window.myStudentID}`);
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('scoreDisplayArea').classList.toggle('hidden', !showScore);
+    document.getElementById('noScoreDisplayArea').classList.toggle('hidden', showScore);
+    window.showView('resultView');
+  };
+
+  // Student Portal Search
+  window.searchPortal = async () => {
+    let id = document.getElementById('portalId').value; if(!id) return alert("กรุณากรอกรหัสนักศึกษา");
+    document.getElementById('overlay').classList.remove('hidden');
+    try {
+      let scSnap = await getDocs(query(collection(db, "scores"), where("studentID", "==", id))); 
+      let h = "<h4 style='color:var(--main); border-bottom:1px solid #eee; padding-bottom:10px;'>ผลการสอบ</h4>";
+      if(scSnap.empty) h += "<p style='color:#e74c3c;'>ไม่พบข้อมูลของรหัสนี้</p>";
+      else { 
+        for (let scDoc of scSnap.docs) { 
+            let sData = scDoc.data(); 
+            let sessionSnap = await getDoc(doc(db, "sessions", sData.sessionID)); 
+            let sName = sessionSnap.exists() ? sessionSnap.data().name : "วิชาที่ถูกลบไปแล้ว"; 
+            h += `<div class="list-item"><span><b style="color:var(--primary-blue); font-size:14px;">${sName}</b><br><small style="color:#777;">ส่งเมื่อ: ${sData.submittedTimeStr||'-'}</small></span><b style="font-size:18px; color:var(--secondary);">${sData.score} คะแนน</b></div>`; 
+        } 
+      }
+      document.getElementById('portalResult').innerHTML = h; 
+    } catch(e) {
+      alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    }
+    document.getElementById('overlay').classList.add('hidden');
+  };
+
+  window.renderNav = () => {
+    let n = document.getElementById("qNavigator"); n.innerHTML = ""; n.classList.remove('hidden');
+    window.allQuizQuestions.forEach((q,i) => {
+      let isAnswered = (window.myAnswers[q.qNum] !== undefined && window.myAnswers[q.qNum] !== "");
+      let b = document.createElement("div"); 
+      b.className = `nav-box ${i===window.currentQIndex?'current':''} ${isAnswered?'answered':''}`;
+      b.innerText = i + 1; // Display sequential number, not original qNum
+      b.onclick = () => { window.currentQIndex = i; window.renderQuiz(); }; n.appendChild(b);
+    });
+  };
+  window.goNextQ = () => { if(window.currentQIndex < window.allQuizQuestions.length-1) { window.currentQIndex++; window.renderQuiz(); } };
+  window.goPrevQ = () => { if(window.currentQIndex > 0) { window.currentQIndex--; window.renderQuiz(); } };
+
+  window.addEventListener('DOMContentLoaded', () => { window.resetQForm(); });
 </script>
 </body>
 </html>
